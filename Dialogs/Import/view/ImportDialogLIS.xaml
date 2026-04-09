@@ -52,8 +52,8 @@
                 </Style>
             </UniformGrid.Resources>
             <Button Content="Отмена" Command="{x:Static npfCommands:NPFGEOCommands.Cancel}"/>
-            <Button Content="&lt; Назад" Command="{Binding Path=PreviousCommand, Mode=OneTime}"/>
-            <Button Content="Далее &gt;" Command="{Binding Path=NextCommand, Mode=OneTime}"/>
+            <Button Content="&lt; Назад" Command="{Binding Path=PreviousCommand}"/>
+            <Button Content="Далее &gt;" Command="{Binding Path=NextCommand}"/>
             <Button Content="Готово" Command="{x:Static npfCommands:NPFGEOCommands.Apply}"/>
         </UniformGrid>
 

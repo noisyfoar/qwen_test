@@ -9,6 +9,8 @@ using NPFGEO.Data;
 using NPFGEO.IO;
 using ShellExtension.Formats.LIS;
 using ShellExtension.Formats.LIS.Dialogs;
+using ImportDialogLisView = NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.View.ImportDialogLIS;
+using ImportDialogLisViewModel = NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel.ImportDialogLIS;
 
 namespace ShellExtension.Formats
 {
@@ -154,7 +156,17 @@ namespace ShellExtension.Formats
 
             }
 
-            return result;
+            var importDialogVm = new ImportDialogLisViewModel(result);
+            var importDialog = new ImportDialogLisView
+            {
+                DataContext = importDialogVm
+            };
+
+            var dialogResult = importDialog.ShowDialog();
+            if (dialogResult.HasValue && dialogResult.Value)
+                return importDialogVm.SelectedCurves;
+
+            return null;
         }
 
         private IMMatrix ToIntMatrix(List<LISRecord> records, int columns, int rows, bool reverse)

@@ -22,27 +22,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.View
     {
         public TabFormatLIS()
         {
-            //InitializeComponent();
-        }
-
-        private void ListBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            if (sender is ListBox)
-            {
-                ListBox listBox = (sender as ListBox);
-                if (listBox.SelectedItem != null)
-                {
-                    listBox.Dispatcher.BeginInvoke(
-                        (Action)(() =>
-                        {
-                            listBox.UpdateLayout();
-                            if (listBox.SelectedItem !=
-                                null)
-                                listBox.ScrollIntoView(
-                                    listBox.SelectedItem);
-                        }));
-                }
-            }
+            InitializeComponent();
         }
     }
 }
