@@ -1,5 +1,5 @@
-﻿
-using NPFGEO.Data;
+﻿using NPFGEO.Data;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -8,172 +8,187 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 {
     public class TabCurvesDialogLIS : ViewModelBase
     {
-        public ObservableCollection<Curve> AvailableCurves { private set; get; } = new ObservableCollection<Curve>();
-        public ObservableCollection<Curve> SelectedCurves { private set; get; } = new ObservableCollection<Curve>();
-
-        ObservableCollection<Curve> _ignoredCurves;
-
-        ObservableCollection<Curve> _sourceCurves;
-
+        private readonly List<Curve> _sourceCurves = new List<Curve>();
         private string _searchText;
+
+        // Имена свойств совпадают с текущими биндингами View.
+        public ObservableCollection<Curve> Available { get; } = new ObservableCollection<Curve>();
+        public ObservableCollection<Curve> Selected { get; } = new ObservableCollection<Curve>();
+
+        // Совместимость с уже существующим кодом.
+        public ObservableCollection<Curve> AvailableCurves => Available;
+        public ObservableCollection<Curve> SelectedCurves => Selected;
+
         public string SearchText
         {
             get => _searchText;
             set
             {
+                if (string.Equals(_searchText, value, StringComparison.Ordinal))
+                    return;
+
                 _searchText = value;
                 CallPropertyChanged(nameof(SearchText));
-                FilterCurves();
+                RebuildAvailable();
             }
         }
-        public TabCurvesDialogLIS(ObservableCollection<Curve> source)
-        {
-            _sourceCurves = source;
 
-            foreach (var curve in source)
-                AvailableCurves.Add(curve);
+        public TabCurvesDialogLIS(Curves source)
+            : this(source, null)
+        {
         }
 
-        public TabCurvesDialogLIS(IEnumerable<Curve> source, IEnumerable<Curve> ignoredItems)
+        public TabCurvesDialogLIS(Curves source, Curves preselected)
         {
-            if (ignoredItems.Any(i => !source.Contains(i)))
-                throw new System.Exception($"Множество {nameof(ignoredItems)} должно быть подмножеством {nameof(source)}");
+            if (source != null)
+                _sourceCurves.AddRange(source);
 
-            foreach (var curve in source)
+            if (preselected != null)
             {
-                _sourceCurves.Add(curve);
-                AvailableCurves.Add(curve);
-            }
-
-            foreach (var curve in ignoredItems)
-            {
-                _ignoredCurves.Add(curve);
-            }
-
-        }
-        void FilterCurves()
-        {
-            if (!string.IsNullOrWhiteSpace(_searchText))
-            {
-                AvailableCurves.Clear();
-
-                var found = _sourceCurves.Where(s => s.Mnemonics.ToLower().Contains(_searchText.ToLower()) &&
-                                               !SelectedCurves.Any(z => z.Mnemonics.ToLower() == s.Mnemonics.ToLower()))
-                                   .Select(i => i);
-
-                foreach (var curve in found)
+                foreach (var curve in preselected)
                 {
-                    AvailableCurves.Add(curve);
+                    var sourceCurve = ResolveSourceCurve(curve);
+                    if (sourceCurve != null && !Selected.Contains(sourceCurve))
+                        Selected.Add(sourceCurve);
                 }
             }
-            else
-            {
-                AvailableCurves.Clear();
 
-                var unselected = _sourceCurves.Except(SelectedCurves);
-
-                foreach (var curve in unselected)
-                {
-                    AvailableCurves.Add(curve);
-                }
-            }
+            RebuildAvailable();
         }
 
-
-
-
+        public Curves GetSelectedSourceCurves()
+        {
+            var result = new Curves();
+            result.AddRange(Selected);
+            return result;
+        }
 
         public bool CanSelectAll()
         {
-            var result = AvailableCurves.Count > 0;
-            return result;
+            return Available.Count > 0;
         }
 
         public void SelectAll()
         {
-            if (_ignoredCurves == null)
+            foreach (var curve in Available.ToArray())
             {
-                foreach (var curve in AvailableCurves)
-                {
-                    SelectedCurves.Add(curve);
-                }
-
-                AvailableCurves.Clear();
-                return;
+                if (!Selected.Contains(curve))
+                    Selected.Add(curve);
             }
 
-            bool selectIgnored =
-                AvailableCurves.Intersect(_ignoredCurves).Count() == AvailableCurves.Count();
-
-            foreach (var curve in AvailableCurves)
-            {
-                if (selectIgnored || !_ignoredCurves.Contains(curve))
-                    SelectedCurves.Add(curve);
-            }
-
-            AvailableCurves.Clear();
-
-            if (!selectIgnored)
-                foreach (var curve in _ignoredCurves)
-                    AvailableCurves.Add(curve);
+            RebuildAvailable();
         }
 
         public bool CanUnselectAll()
         {
-            var result = SelectedCurves.Count > 0;
-            return result;
+            return Selected.Count > 0;
         }
 
         public void UnselectAll()
         {
-            foreach (var curve in SelectedCurves)
-            {
-                AvailableCurves.Add(curve);
-            }
-            SelectedCurves.Clear();
+            Selected.Clear();
+            RebuildAvailable();
         }
 
         public bool CanApply()
         {
-            return SelectedCurves.Count > 0;
+            return Selected.Count > 0;
         }
 
         public void Up(Curve curve)
         {
-            var index = SelectedCurves.IndexOf(curve);
+            if (curve == null)
+                return;
+
+            var index = Selected.IndexOf(curve);
             if (index > 0)
-            {
-                SelectedCurves.Move(index, index - 1);
-            }
+                Selected.Move(index, index - 1);
         }
 
         public void Down(Curve curve)
         {
-            var index = SelectedCurves.IndexOf(curve);
+            if (curve == null)
+                return;
 
-            if (index + 1 < SelectedCurves.Count())
-            {
-                SelectedCurves.Move(index, index + 1);
-            }
+            var index = Selected.IndexOf(curve);
+            if (index >= 0 && index + 1 < Selected.Count)
+                Selected.Move(index, index + 1);
         }
 
         public void AddCurve(IEnumerable<Curve> items)
         {
-            foreach (var curve in items)
+            if (items == null)
+                return;
+
+            foreach (var curve in items.ToArray())
             {
-                SelectedCurves.Add(curve);
-                AvailableCurves.Remove(curve);
+                if (curve != null && !Selected.Contains(curve))
+                    Selected.Add(curve);
             }
+
+            RebuildAvailable();
         }
 
         public void RemoveCurve(IEnumerable<Curve> items)
         {
-            foreach (var curve in items)
+            if (items == null)
+                return;
+
+            foreach (var curve in items.ToArray())
             {
-                SelectedCurves.Remove(curve);
-                AvailableCurves.Add(curve);
+                if (curve != null)
+                    Selected.Remove(curve);
             }
+
+            RebuildAvailable();
+        }
+
+        private void RebuildAvailable()
+        {
+            Available.Clear();
+
+            IEnumerable<Curve> query = _sourceCurves.Where(curve => !Selected.Contains(curve));
+
+            if (!string.IsNullOrWhiteSpace(_searchText))
+            {
+                var text = _searchText.Trim();
+                query = query.Where(curve => MatchCurve(curve, text));
+            }
+
+            foreach (var curve in query)
+                Available.Add(curve);
+        }
+
+        private Curve ResolveSourceCurve(Curve curve)
+        {
+            if (curve == null)
+                return null;
+
+            if (_sourceCurves.Contains(curve))
+                return curve;
+
+            // Фоллбэк для случаев, когда в preselected пришли клоны.
+            return _sourceCurves.FirstOrDefault(c =>
+                string.Equals(c?.Mnemonics, curve.Mnemonics, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static bool MatchCurve(Curve curve, string text)
+        {
+            if (curve == null)
+                return false;
+
+            return ContainsIgnoreCase(curve.Mnemonics, text)
+                   || ContainsIgnoreCase(curve.Caption, text)
+                   || ContainsIgnoreCase(curve.Name, text)
+                   || ContainsIgnoreCase(curve.Description, text);
+        }
+
+        private static bool ContainsIgnoreCase(string source, string value)
+        {
+            if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(value))
+                return false;
+
+            return source.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
         }
     }
-
 }

@@ -6,87 +6,92 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
     {
         private Curves _curves;
         private Curves _selectedCurves;
-        bool _rename = false;
-        bool _preOrPost = false;
-        string _add = "";
-        
+
+        private ViewModelBase _currentStage;
+        public ViewModelBase CurrentStage
+        {
+            get => _currentStage;
+            private set
+            {
+                _currentStage = value;
+                CallPropertyChanged(nameof(CurrentStage));
+                CallPropertyChanged(nameof(IsTabCurves));
+                CallPropertyChanged(nameof(IsTabFormat));
+            }
+        }
+
         public ImportDialogLIS(Curves curves)
         {
-            _curves = curves;
-
+            _curves = curves ?? new Curves();
 
             NextCommand = new NonParamRelayCommand(Next, CanNext);
             PreviousCommand = new NonParamRelayCommand(Previous, CanPrevious);
-        }
-        public ViewModelBase CurrentStage { set; get; }
 
-
-        public Curves AllCurves
-        {
-            get { return _curves; }
+            CurrentStage = new TabCurvesDialogLIS(_curves);
         }
 
-        public NonParamRelayCommand NextCommand { private set; get; }
-        public NonParamRelayCommand PreviousCommand { private set; get; }
+        public Curves AllCurves => _curves;
 
-        public bool IsTabCurves { get { return CurrentStage is TabCurvesDialogLIS; } }
-        public bool IsTabFormat { get { return CurrentStage is TabFormatDialogLIS; } }
+        // Результат импорта после Finish().
+        public Curves SelectedCurves => _selectedCurves ?? new Curves();
 
-        void UpdateStageFlags()
-        {
-            CallPropertyChanged("IsTabCurves");
-            CallPropertyChanged("IsTabFormat");
-        }
+        public NonParamRelayCommand NextCommand { get; }
+        public NonParamRelayCommand PreviousCommand { get; }
+
+        public bool IsTabCurves => CurrentStage is TabCurvesDialogLIS;
+        public bool IsTabFormat => CurrentStage is TabFormatDialogLIS;
+
         public bool CanFinish()
         {
-            return CurrentStage is TabFormatDialogLIS && (CurrentStage as TabFormatDialogLIS).CanApply();
+            return CurrentStage is TabFormatDialogLIS formatStage && formatStage.CanApply();
         }
 
         public void Finish()
         {
-            _curves = null;
+            if (CurrentStage is TabFormatDialogLIS formatStage)
+            {
+                _selectedCurves = formatStage.SelectedCurves;
+                _curves = _selectedCurves;
+            }
+            else if (CurrentStage is TabCurvesDialogLIS curvesStage)
+            {
+                _selectedCurves = curvesStage.GetSelectedSourceCurves();
+                _curves = _selectedCurves;
+            }
+            else
+            {
+                _selectedCurves = new Curves();
+                _curves = _selectedCurves;
+            }
+
+            CallPropertyChanged(nameof(AllCurves));
+            CallPropertyChanged(nameof(SelectedCurves));
         }
 
         public bool CanNext()
         {
-            return !(CurrentStage is TabFormatDialogLIS);
+            return CurrentStage is TabCurvesDialogLIS curvesStage && curvesStage.CanApply();
         }
+
         public void Next()
         {
-            if(CurrentStage is TabCurvesDialogLIS)
+            if (CurrentStage is TabCurvesDialogLIS curvesStage)
             {
-                NextToTabFormat(CurrentStage as TabCurvesDialogLIS);
+                CurrentStage = new TabFormatDialogLIS(curvesStage.GetSelectedSourceCurves());
             }
-            UpdateStageFlags();
-        }
-        private void NextToTabFormat(TabCurvesDialogLIS prev)
-        {
-
-            
-            CallPropertyChanged("CurrentStage");
         }
 
         public bool CanPrevious()
         {
-            return !(CurrentStage is TabCurvesDialogLIS);
+            return CurrentStage is TabFormatDialogLIS;
         }
 
         public void Previous()
         {
-            if(CurrentStage is TabFormatDialogLIS)
+            if (CurrentStage is TabFormatDialogLIS formatStage)
             {
-                PreviousToTabCurves();
+                CurrentStage = new TabCurvesDialogLIS(AllCurves, formatStage.SelectedCurves);
             }
-            UpdateStageFlags();
         }
-        private void PreviousToTabCurves()
-        {
-            // clear the data
-
-            CurrentStage = new TabCurvesDialogLIS(AllCurves);
-            CallPropertyChanged("CurrentStage");
-        }
-        
-
     }
 }
