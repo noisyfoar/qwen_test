@@ -1,13 +1,23 @@
-﻿using NPFGEO.Data;
-
-namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
+﻿namespace ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 {
     public class ImportDialogLIS : ViewModelBase
     {
-        private Curves _curves;
-        private Curves _selectedCurves;
-
         private ViewModelBase _currentStage;
+
+        public ImportDialogLIS()
+        {
+            CurvesStage = new TabCurvesDialogLIS();
+            RenameStage = new TabRenameDialogLIS();
+
+            CurrentStage = CurvesStage;
+
+            NextCommand = new NonParamRelayCommand(Next, CanNext);
+            PreviousCommand = new NonParamRelayCommand(Previous, CanPrevious);
+        }
+
+        public TabCurvesDialogLIS CurvesStage { get; }
+        public TabRenameDialogLIS RenameStage { get; }
+
         public ViewModelBase CurrentStage
         {
             get => _currentStage;
@@ -15,83 +25,51 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             {
                 _currentStage = value;
                 CallPropertyChanged(nameof(CurrentStage));
-                CallPropertyChanged(nameof(IsTabCurves));
-                CallPropertyChanged(nameof(IsTabFormat));
+                CallPropertyChanged(nameof(IsSelectCurves));
+                CallPropertyChanged(nameof(IsSelectRename));
             }
         }
 
-        public ImportDialogLIS(Curves curves)
-        {
-            _curves = curves ?? new Curves();
-
-            NextCommand = new NonParamRelayCommand(Next, CanNext);
-            PreviousCommand = new NonParamRelayCommand(Previous, CanPrevious);
-
-            CurrentStage = new TabCurvesDialogLIS(_curves);
-        }
-
-        public Curves AllCurves => _curves;
-
-        // Результат импорта после Finish().
-        public Curves SelectedCurves => _selectedCurves ?? new Curves();
+        public bool IsSelectCurves => CurrentStage is TabCurvesDialogLIS;
+        public bool IsSelectRename => CurrentStage is TabRenameDialogLIS;
 
         public NonParamRelayCommand NextCommand { get; }
         public NonParamRelayCommand PreviousCommand { get; }
 
-        public bool IsTabCurves => CurrentStage is TabCurvesDialogLIS;
-        public bool IsTabFormat => CurrentStage is TabFormatDialogLIS;
-
-        public bool CanFinish()
-        {
-            return CurrentStage is TabFormatDialogLIS formatStage && formatStage.CanApply();
-        }
-
-        public void Finish()
-        {
-            if (CurrentStage is TabFormatDialogLIS formatStage)
-            {
-                _selectedCurves = formatStage.SelectedCurves;
-                _curves = _selectedCurves;
-            }
-            else if (CurrentStage is TabCurvesDialogLIS curvesStage)
-            {
-                _selectedCurves = curvesStage.GetSelectedSourceCurves();
-                _curves = _selectedCurves;
-            }
-            else
-            {
-                _selectedCurves = new Curves();
-                _curves = _selectedCurves;
-            }
-
-            CallPropertyChanged(nameof(AllCurves));
-            CallPropertyChanged(nameof(SelectedCurves));
-        }
-
         public bool CanNext()
         {
-            return CurrentStage is TabCurvesDialogLIS curvesStage && curvesStage.CanApply();
+            return IsSelectCurves && CurvesStage.CanApply();
         }
 
         public void Next()
         {
-            if (CurrentStage is TabCurvesDialogLIS curvesStage)
+            if (IsSelectCurves)
             {
-                CurrentStage = new TabFormatDialogLIS(curvesStage.GetSelectedSourceCurves());
+                CurrentStage = RenameStage;
             }
         }
 
         public bool CanPrevious()
         {
-            return CurrentStage is TabFormatDialogLIS;
+            return IsSelectRename;
         }
 
         public void Previous()
         {
-            if (CurrentStage is TabFormatDialogLIS formatStage)
+            if (IsSelectRename)
             {
-                CurrentStage = new TabCurvesDialogLIS(AllCurves, formatStage.SelectedCurves);
+                CurrentStage = CurvesStage;
             }
+        }
+
+        public bool CanFinish()
+        {
+            return IsSelectRename && RenameStage.CanApply();
+        }
+
+        public void Finish()
+        {
+            // Заглушка: на этом шаге можно применить RenameStage к CurvesStage.Selected.
         }
     }
 }

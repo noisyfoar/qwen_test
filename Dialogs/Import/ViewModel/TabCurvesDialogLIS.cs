@@ -1,66 +1,46 @@
-﻿using NPFGEO.Data;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
+namespace ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 {
     public class TabCurvesDialogLIS : ViewModelBase
     {
-        private readonly List<Curve> _sourceCurves = new List<Curve>();
+        public class CurveInfo
+        {
+            public string Units { get; set; }
+            public string Description { get; set; }
+            public string Mnemonics { get; set; }
+        }
+
+        public class Item
+        {
+            public string Name { get; set; }
+            public bool IsEnabled { get; set; }
+            public bool CanEnabled { get; set; } = true;
+            public CurveInfo Curve { get; set; } = new CurveInfo();
+        }
+
+        private readonly ObservableCollection<Item> _source = new ObservableCollection<Item>();
         private string _searchText;
 
-        // Имена свойств совпадают с текущими биндингами View.
-        public ObservableCollection<Curve> Available { get; } = new ObservableCollection<Curve>();
-        public ObservableCollection<Curve> Selected { get; } = new ObservableCollection<Curve>();
-
-        // Совместимость с уже существующим кодом.
-        public ObservableCollection<Curve> AvailableCurves => Available;
-        public ObservableCollection<Curve> SelectedCurves => Selected;
+        public ObservableCollection<Item> Available { get; } = new ObservableCollection<Item>();
+        public ObservableCollection<Item> Selected { get; } = new ObservableCollection<Item>();
 
         public string SearchText
         {
             get => _searchText;
             set
             {
-                if (string.Equals(_searchText, value, StringComparison.Ordinal))
-                    return;
-
                 _searchText = value;
                 CallPropertyChanged(nameof(SearchText));
                 RebuildAvailable();
             }
         }
 
-        public TabCurvesDialogLIS(Curves source)
-            : this(source, null)
+        public bool CanApply()
         {
-        }
-
-        public TabCurvesDialogLIS(Curves source, Curves preselected)
-        {
-            if (source != null)
-                _sourceCurves.AddRange(source);
-
-            if (preselected != null)
-            {
-                foreach (var curve in preselected)
-                {
-                    var sourceCurve = ResolveSourceCurve(curve);
-                    if (sourceCurve != null && !Selected.Contains(sourceCurve))
-                        Selected.Add(sourceCurve);
-                }
-            }
-
-            RebuildAvailable();
-        }
-
-        public Curves GetSelectedSourceCurves()
-        {
-            var result = new Curves();
-            result.AddRange(Selected);
-            return result;
+            return Selected.Count > 0;
         }
 
         public bool CanSelectAll()
@@ -70,10 +50,10 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
         public void SelectAll()
         {
-            foreach (var curve in Available.ToArray())
+            foreach (var item in Available.ToArray())
             {
-                if (!Selected.Contains(curve))
-                    Selected.Add(curve);
+                if (!Selected.Contains(item))
+                    Selected.Add(item);
             }
 
             RebuildAvailable();
@@ -90,105 +70,98 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             RebuildAvailable();
         }
 
-        public bool CanApply()
+        public void Up(Item item)
         {
-            return Selected.Count > 0;
-        }
-
-        public void Up(Curve curve)
-        {
-            if (curve == null)
+            if (item == null)
                 return;
 
-            var index = Selected.IndexOf(curve);
+            var index = Selected.IndexOf(item);
             if (index > 0)
                 Selected.Move(index, index - 1);
         }
 
-        public void Down(Curve curve)
+        public void Down(Item item)
         {
-            if (curve == null)
+            if (item == null)
                 return;
 
-            var index = Selected.IndexOf(curve);
+            var index = Selected.IndexOf(item);
             if (index >= 0 && index + 1 < Selected.Count)
                 Selected.Move(index, index + 1);
         }
 
-        public void AddCurve(IEnumerable<Curve> items)
+        public void AddCurve(IEnumerable<Item> items)
         {
             if (items == null)
                 return;
 
-            foreach (var curve in items.ToArray())
+            foreach (var item in items.ToArray())
             {
-                if (curve != null && !Selected.Contains(curve))
-                    Selected.Add(curve);
+                if (item != null && !Selected.Contains(item))
+                    Selected.Add(item);
             }
 
             RebuildAvailable();
         }
 
-        public void RemoveCurve(IEnumerable<Curve> items)
+        public void RemoveCurve(IEnumerable<Item> items)
         {
             if (items == null)
                 return;
 
-            foreach (var curve in items.ToArray())
+            foreach (var item in items.ToArray())
             {
-                if (curve != null)
-                    Selected.Remove(curve);
+                if (item != null)
+                    Selected.Remove(item);
             }
 
             RebuildAvailable();
+        }
+
+        public IReadOnlyList<Item> GetSelectedItems()
+        {
+            return Selected.ToArray();
+        }
+
+        private static bool IsSameCurve(Item left, Item right)
+        {
+            if (ReferenceEquals(left, right))
+                return true;
+
+            if (left == null || right == null)
+                return false;
+
+            var leftMnemonics = left.Curve?.Mnemonics ?? string.Empty;
+            var rightMnemonics = right.Curve?.Mnemonics ?? string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(leftMnemonics) || !string.IsNullOrWhiteSpace(rightMnemonics))
+                return string.Equals(leftMnemonics, rightMnemonics, System.StringComparison.OrdinalIgnoreCase);
+
+            return string.Equals(left.Name ?? string.Empty, right.Name ?? string.Empty, System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsSelected(Item candidate)
+        {
+            return Selected.Any(selected => IsSameCurve(selected, candidate));
         }
 
         private void RebuildAvailable()
         {
             Available.Clear();
 
-            IEnumerable<Curve> query = _sourceCurves.Where(curve => !Selected.Contains(curve));
+            IEnumerable<Item> query = _source.Where(item => !IsSelected(item));
 
             if (!string.IsNullOrWhiteSpace(_searchText))
             {
-                var text = _searchText.Trim();
-                query = query.Where(curve => MatchCurve(curve, text));
+                var text = _searchText.ToLowerInvariant();
+                query = query.Where(i =>
+                    (i.Name ?? string.Empty).ToLowerInvariant().Contains(text)
+                    || (i.Curve?.Mnemonics ?? string.Empty).ToLowerInvariant().Contains(text)
+                    || (i.Curve?.Description ?? string.Empty).ToLowerInvariant().Contains(text));
             }
 
-            foreach (var curve in query)
-                Available.Add(curve);
-        }
-
-        private Curve ResolveSourceCurve(Curve curve)
-        {
-            if (curve == null)
-                return null;
-
-            if (_sourceCurves.Contains(curve))
-                return curve;
-
-            // Фоллбэк для случаев, когда в preselected пришли клоны.
-            return _sourceCurves.FirstOrDefault(c =>
-                string.Equals(c?.Mnemonics, curve.Mnemonics, StringComparison.OrdinalIgnoreCase));
-        }
-
-        private static bool MatchCurve(Curve curve, string text)
-        {
-            if (curve == null)
-                return false;
-
-            return ContainsIgnoreCase(curve.Mnemonics, text)
-                   || ContainsIgnoreCase(curve.Caption, text)
-                   || ContainsIgnoreCase(curve.Name, text)
-                   || ContainsIgnoreCase(curve.Description, text);
-        }
-
-        private static bool ContainsIgnoreCase(string source, string value)
-        {
-            if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(value))
-                return false;
-
-            return source.IndexOf(value, StringComparison.OrdinalIgnoreCase) >= 0;
+            foreach (var item in query)
+                Available.Add(item);
         }
     }
 }
