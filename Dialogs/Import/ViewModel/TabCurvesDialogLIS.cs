@@ -123,11 +123,33 @@ namespace ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             return Selected.ToArray();
         }
 
+        private static bool IsSameCurve(Item left, Item right)
+        {
+            if (ReferenceEquals(left, right))
+                return true;
+
+            if (left == null || right == null)
+                return false;
+
+            var leftMnemonics = left.Curve?.Mnemonics ?? string.Empty;
+            var rightMnemonics = right.Curve?.Mnemonics ?? string.Empty;
+
+            if (!string.IsNullOrWhiteSpace(leftMnemonics) || !string.IsNullOrWhiteSpace(rightMnemonics))
+                return string.Equals(leftMnemonics, rightMnemonics, System.StringComparison.OrdinalIgnoreCase);
+
+            return string.Equals(left.Name ?? string.Empty, right.Name ?? string.Empty, System.StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsSelected(Item candidate)
+        {
+            return Selected.Any(selected => IsSameCurve(selected, candidate));
+        }
+
         private void RebuildAvailable()
         {
             Available.Clear();
 
-            IEnumerable<Item> query = _source.Where(item => !Selected.Contains(item));
+            IEnumerable<Item> query = _source.Where(item => !IsSelected(item));
 
             if (!string.IsNullOrWhiteSpace(_searchText))
             {
