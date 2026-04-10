@@ -1,4 +1,4 @@
-namespace NPFGEO.IO.LAS.Import.ViewModel
+namespace ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 {
     public class SelectRenameDialog : ViewModelBase
     {

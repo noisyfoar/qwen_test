@@ -13,7 +13,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace NPFGEO.IO.LAS.Import.View
+namespace ShellExtension.Formats.LIS.Dialogs.Import.View
 {
     /// <summary>
     /// Логика взаимодействия для SelectEncoding.xaml

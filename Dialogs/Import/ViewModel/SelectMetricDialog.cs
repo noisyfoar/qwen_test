@@ -2,7 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace NPFGEO.IO.LAS.Import.ViewModel
+namespace ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 {
     public class SelectMetricDialog : ViewModelBase
     {

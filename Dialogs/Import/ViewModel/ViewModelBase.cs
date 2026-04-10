@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace NPFGEO.IO.LAS.Import.ViewModel
+namespace ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 {
     public abstract class ViewModelBase : INotifyPropertyChanged
     {
