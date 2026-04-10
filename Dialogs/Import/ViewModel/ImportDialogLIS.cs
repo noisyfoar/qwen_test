@@ -1,13 +1,13 @@
-namespace ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
+﻿namespace ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 {
-    public class ImportDialog : ViewModelBase
+    public class ImportDialogLIS : ViewModelBase
     {
         private ViewModelBase _currentStage;
 
-        public ImportDialog()
+        public ImportDialogLIS()
         {
-            CurvesStage = new SelectCurvesDialog();
-            RenameStage = new SelectRenameDialog();
+            CurvesStage = new TabCurvesDialogLIS();
+            RenameStage = new TabRenameDialogLIS();
 
             CurrentStage = CurvesStage;
 
@@ -15,8 +15,8 @@ namespace ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             PreviousCommand = new NonParamRelayCommand(Previous, CanPrevious);
         }
 
-        public SelectCurvesDialog CurvesStage { get; }
-        public SelectRenameDialog RenameStage { get; }
+        public TabCurvesDialogLIS CurvesStage { get; }
+        public TabRenameDialogLIS RenameStage { get; }
 
         public ViewModelBase CurrentStage
         {
@@ -30,8 +30,8 @@ namespace ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             }
         }
 
-        public bool IsSelectCurves => CurrentStage is SelectCurvesDialog;
-        public bool IsSelectRename => CurrentStage is SelectRenameDialog;
+        public bool IsSelectCurves => CurrentStage is TabCurvesDialogLIS;
+        public bool IsSelectRename => CurrentStage is TabRenameDialogLIS;
 
         public NonParamRelayCommand NextCommand { get; }
         public NonParamRelayCommand PreviousCommand { get; }

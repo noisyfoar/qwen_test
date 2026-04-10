@@ -3,11 +3,11 @@ using System.Windows.Controls;
 namespace ShellExtension.Formats.LIS.Dialogs.Import.View
 {
     /// <summary>
-    /// Логика взаимодействия для SelectRename.xaml
+    /// Логика взаимодействия для TabRename.xaml
     /// </summary>
-    public partial class SelectRename : UserControl
+    public partial class TabRename : UserControl
     {
-        public SelectRename()
+        public TabRename()
         {
             InitializeComponent();
         }

@@ -16,21 +16,21 @@ using System.Windows.Shapes;
 namespace ShellExtension.Formats.LIS.Dialogs.Import.View
 {
     /// <summary>
-    /// Логика взаимодействия для SelectCurves.xaml
+    /// Логика взаимодействия для TabCurves.xaml
     /// </summary>
-    public partial class SelectCurves : UserControl
+    public partial class TabCurves : UserControl
     {
         public static RoutedCommand Up = new RoutedCommand();
         public static RoutedCommand Down = new RoutedCommand();
         public static RoutedCommand AddCurves = new RoutedCommand();
         public static RoutedCommand RemoveCurves = new RoutedCommand();
 
-        public SelectCurves()
+        public TabCurves()
         {
             InitializeComponent();
         }
 
-        ViewModel.SelectCurvesDialog ViewModel { get { return DataContext as ViewModel.SelectCurvesDialog; } }
+        ViewModel.TabCurvesDialogLIS ViewModel { get { return DataContext as ViewModel.TabCurvesDialogLIS; } }
 
         private void SelecteAll_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
@@ -59,7 +59,7 @@ namespace ShellExtension.Formats.LIS.Dialogs.Import.View
 
         private void Up_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            ViewModel.Up(SelectedCurves.SelectedItem as ViewModel.SelectCurvesDialog.Item);
+            ViewModel.Up(SelectedCurves.SelectedItem as ViewModel.TabCurvesDialogLIS.Item);
             SelectedCurves.ScrollIntoView(SelectedCurves.SelectedItem);
         }
 
@@ -70,7 +70,7 @@ namespace ShellExtension.Formats.LIS.Dialogs.Import.View
 
         private void Down_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            ViewModel.Down(SelectedCurves.SelectedItem as ViewModel.SelectCurvesDialog.Item);
+            ViewModel.Down(SelectedCurves.SelectedItem as ViewModel.TabCurvesDialogLIS.Item);
             SelectedCurves.ScrollIntoView(SelectedCurves.SelectedItem);
 
         }
@@ -83,7 +83,7 @@ namespace ShellExtension.Formats.LIS.Dialogs.Import.View
 
         private void AddCurves_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            ViewModel.AddCurve(CurvesList.SelectedItems.Cast<ViewModel.SelectCurvesDialog.Item>().ToArray());
+            ViewModel.AddCurve(CurvesList.SelectedItems.Cast<ViewModel.TabCurvesDialogLIS.Item>().ToArray());
         }
 
         private void RemoveCurve_CanExecute(object sender, CanExecuteRoutedEventArgs e)
@@ -94,14 +94,14 @@ namespace ShellExtension.Formats.LIS.Dialogs.Import.View
 
         private void RemoveCurve_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            ViewModel.RemoveCurve(SelectedCurves.SelectedItems.Cast<ViewModel.SelectCurvesDialog.Item>().ToArray());
+            ViewModel.RemoveCurve(SelectedCurves.SelectedItems.Cast<ViewModel.TabCurvesDialogLIS.Item>().ToArray());
 
         }
 
         private void AddToTargetButton_Click(object sender, RoutedEventArgs e)
         {
-            var item = (sender as Button).DataContext as ViewModel.SelectCurvesDialog.Item;
-            ViewModel.AddCurve(new ViewModel.SelectCurvesDialog.Item[] { item });
+            var item = (sender as Button).DataContext as ViewModel.TabCurvesDialogLIS.Item;
+            ViewModel.AddCurve(new ViewModel.TabCurvesDialogLIS.Item[] { item });
         }
     }
 }

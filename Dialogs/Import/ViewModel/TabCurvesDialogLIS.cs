@@ -1,10 +1,10 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
 namespace ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 {
-    public class SelectCurvesDialog : ViewModelBase
+    public class TabCurvesDialogLIS : ViewModelBase
     {
         public class CurveInfo
         {

@@ -1,4 +1,4 @@
-<UserControl x:Class="ShellExtension.Formats.LIS.Dialogs.Import.View.SelectCurves"
+<UserControl x:Class="ShellExtension.Formats.LIS.Dialogs.Import.View.TabCurves"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -13,10 +13,10 @@
     <UserControl.CommandBindings>
         <CommandBinding Command="controls:NPFGEOCommands.SelectAll" Executed="SelectAll_Executed" CanExecute="SelecteAll_CanExecute"/>
         <CommandBinding Command="controls:NPFGEOCommands.UnselectAll" Executed="UnselectAll_Executed" CanExecute="UnselectAll_CanExecute"/>
-        <CommandBinding Command="local:SelectCurves.Up" Executed="Up_Executed" CanExecute="Up_CanExecute"/>
-        <CommandBinding Command="local:SelectCurves.Down" Executed="Down_Executed" CanExecute="Down_CanExecute"/>
-        <CommandBinding Command="local:SelectCurves.AddCurves" Executed="AddCurves_Executed" CanExecute="AddCurves_CanExecute"/>
-        <CommandBinding Command="local:SelectCurves.RemoveCurves" Executed="RemoveCurve_Executed" CanExecute="RemoveCurve_CanExecute"/>
+        <CommandBinding Command="local:TabCurves.Up" Executed="Up_Executed" CanExecute="Up_CanExecute"/>
+        <CommandBinding Command="local:TabCurves.Down" Executed="Down_Executed" CanExecute="Down_CanExecute"/>
+        <CommandBinding Command="local:TabCurves.AddCurves" Executed="AddCurves_Executed" CanExecute="AddCurves_CanExecute"/>
+        <CommandBinding Command="local:TabCurves.RemoveCurves" Executed="RemoveCurve_Executed" CanExecute="RemoveCurve_CanExecute"/>
     </UserControl.CommandBindings>
 
     <UserControl.Resources>
@@ -97,14 +97,14 @@
             </GroupBox>
 
             <StackPanel Grid.Column="1" Orientation="Vertical" VerticalAlignment="Center">
-                <Button VerticalAlignment="Center" Margin="5" Command="local:SelectCurves.AddCurves">
+                <Button VerticalAlignment="Center" Margin="5" Command="local:TabCurves.AddCurves">
                     <Button.Content>
                         <StackPanel Orientation="Horizontal">
                             <Image Name="RightArrow" Width="{StaticResource imageSize}" Height="{StaticResource imageSize}" Margin="0,0,0,0" Source="..\..\..\Images32\RightArrow.png"/>
                         </StackPanel>
                     </Button.Content>
                 </Button>
-                <Button VerticalAlignment="Center" Margin="5" Command="local:SelectCurves.RemoveCurves">
+                <Button VerticalAlignment="Center" Margin="5" Command="local:TabCurves.RemoveCurves">
                     <Button.Content>
                         <StackPanel Orientation="Horizontal">
                             <Image Name="LeftArrow" Width="{StaticResource imageSize}" Height="{StaticResource imageSize}" Margin="0,0,0,0" Source="..\..\..\Images32\LeftArrow.png"/>
@@ -145,14 +145,14 @@
                                     </MenuItem>
                                 </Menu>
                                 <Separator/>-->
-                                <Button VerticalAlignment="Center" Command="local:SelectCurves.Up" Margin="2, 0, 2, 0">
+                                <Button VerticalAlignment="Center" Command="local:TabCurves.Up" Margin="2, 0, 2, 0">
                                     <Button.Content>
                                         <StackPanel Orientation="Horizontal">
                                             <Image Name="UpArrow" Width="13" Height="13" Margin="0,0,0,0" Source="..\..\..\Images32\UpArrow.png"/>
                                         </StackPanel>
                                     </Button.Content>
                                 </Button>
-                                <Button VerticalAlignment="Center" Command="local:SelectCurves.Down" Margin="2, 0, 2, 0">
+                                <Button VerticalAlignment="Center" Command="local:TabCurves.Down" Margin="2, 0, 2, 0">
                                     <Button.Content>
                                         <StackPanel Orientation="Horizontal">
                                             <Image Name="DownArrow" Width="13" Height="13" Margin="0,0,0,0" Source="..\..\..\Images32\DownArrow.png"/>

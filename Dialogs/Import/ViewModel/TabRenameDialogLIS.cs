@@ -1,12 +1,12 @@
 namespace ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 {
-    public class SelectRenameDialog : ViewModelBase
+    public class TabRenameDialogLIS : ViewModelBase
     {
         private RenameMode _mode;
         private string _prefix = string.Empty;
         private string _postfix = string.Empty;
 
-        public SelectRenameDialog()
+        public TabRenameDialogLIS()
         {
             Mode = RenameMode.None;
         }

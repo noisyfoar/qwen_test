@@ -15,16 +15,16 @@ using System.Windows.Shapes;
 namespace ShellExtension.Formats.LIS.Dialogs.Import.View
 {
     /// <summary>
-    /// Логика взаимодействия для ImportDialog.xaml
+    /// Логика взаимодействия для ImportDialogLIS.xaml
     /// </summary>
-    public partial class ImportDialog : Window
+    public partial class ImportDialogLIS : Window
     {
-        public ImportDialog()
+        public ImportDialogLIS()
         {
             InitializeComponent();
         }
 
-        public ViewModel.ImportDialog ViewModel { get { return DataContext as ViewModel.ImportDialog; } }
+        public ViewModel.ImportDialogLIS ViewModel { get { return DataContext as ViewModel.ImportDialogLIS; } }
 
         private void Apply_CanExecute(object sender, CanExecuteRoutedEventArgs e)
         {
