@@ -6,19 +6,17 @@ namespace NPFGEO.IO.LAS.Import.ViewModel
 
         public ImportDialog()
         {
-            EncodingStage = new SelectEncodingDialog();
-            MetricStage = new SelectMetricDialog();
             CurvesStage = new SelectCurvesDialog();
+            RenameStage = new SelectRenameDialog();
 
-            CurrentStage = EncodingStage;
+            CurrentStage = CurvesStage;
 
             NextCommand = new NonParamRelayCommand(Next, CanNext);
             PreviousCommand = new NonParamRelayCommand(Previous, CanPrevious);
         }
 
-        public SelectEncodingDialog EncodingStage { get; }
-        public SelectMetricDialog MetricStage { get; }
         public SelectCurvesDialog CurvesStage { get; }
+        public SelectRenameDialog RenameStage { get; }
 
         public ViewModelBase CurrentStage
         {
@@ -27,65 +25,51 @@ namespace NPFGEO.IO.LAS.Import.ViewModel
             {
                 _currentStage = value;
                 CallPropertyChanged(nameof(CurrentStage));
-                CallPropertyChanged(nameof(IsSelectEncoding));
-                CallPropertyChanged(nameof(IsSelectMetric));
                 CallPropertyChanged(nameof(IsSelectCurves));
+                CallPropertyChanged(nameof(IsSelectRename));
             }
         }
 
-        public bool IsSelectEncoding => CurrentStage is SelectEncodingDialog;
-        public bool IsSelectMetric => CurrentStage is SelectMetricDialog;
         public bool IsSelectCurves => CurrentStage is SelectCurvesDialog;
+        public bool IsSelectRename => CurrentStage is SelectRenameDialog;
 
         public NonParamRelayCommand NextCommand { get; }
         public NonParamRelayCommand PreviousCommand { get; }
 
         public bool CanNext()
         {
-            return !IsSelectCurves;
+            return IsSelectCurves && CurvesStage.CanApply();
         }
 
         public void Next()
         {
-            if (IsSelectEncoding)
+            if (IsSelectCurves)
             {
-                CurrentStage = MetricStage;
-                return;
-            }
-
-            if (IsSelectMetric)
-            {
-                CurrentStage = CurvesStage;
+                CurrentStage = RenameStage;
             }
         }
 
         public bool CanPrevious()
         {
-            return !IsSelectEncoding;
+            return IsSelectRename;
         }
 
         public void Previous()
         {
-            if (IsSelectCurves)
+            if (IsSelectRename)
             {
-                CurrentStage = MetricStage;
-                return;
-            }
-
-            if (IsSelectMetric)
-            {
-                CurrentStage = EncodingStage;
+                CurrentStage = CurvesStage;
             }
         }
 
         public bool CanFinish()
         {
-            return IsSelectCurves && CurvesStage.CanApply();
+            return IsSelectRename && RenameStage.CanApply();
         }
 
         public void Finish()
         {
-            // Заглушка: здесь будет итоговая сборка результата импорта.
+            // Заглушка: на этом шаге можно применить RenameStage к CurvesStage.Selected.
         }
     }
 }

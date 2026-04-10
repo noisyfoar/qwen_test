@@ -11,16 +11,12 @@
         Title="Импорт файла" Height="450" Width="720">
 
     <Window.Resources>
-        <DataTemplate DataType="{x:Type vm:SelectEncodingDialog}">
-            <view:SelectEncoding/>
-        </DataTemplate>
-
-        <DataTemplate DataType="{x:Type vm:SelectMetricDialog}">
-            <view:SelectMetric/>
-        </DataTemplate>
-
         <DataTemplate DataType="{x:Type vm:SelectCurvesDialog}">
             <view:SelectCurves/>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:SelectRenameDialog}">
+            <view:SelectRename/>
         </DataTemplate>
 
         <Style TargetType="Run" x:Key="StageStyle">
@@ -63,11 +59,9 @@
 
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10, 2, 10, 2">
             <TextBlock FontSize="14" >
-                <Run Text="Выбор кодировки" IsEnabled="{Binding Path=IsSelectEncoding, Mode=OneWay}" Style="{StaticResource StageStyle}"/>
-                <Run Text="&gt;" Foreground="LightGray"/>
-                <Run Text="Выбор метрики" IsEnabled="{Binding Path=IsSelectMetric, Mode=OneWay}" Style="{StaticResource StageStyle}"/>
-                <Run Text="&gt;" Foreground="LightGray"/>
                 <Run Text="Выбор кривых" IsEnabled="{Binding Path=IsSelectCurves, Mode=OneWay}" Style="{StaticResource StageStyle}"/>
+                <Run Text="&gt;" Foreground="LightGray"/>
+                <Run Text="Выбор переименования кривой" IsEnabled="{Binding Path=IsSelectRename, Mode=OneWay}" Style="{StaticResource StageStyle}"/>
             </TextBlock>
         </StackPanel>
 
