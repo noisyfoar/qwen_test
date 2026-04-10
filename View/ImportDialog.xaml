@@ -1,0 +1,78 @@
+<Window x:Class="NPFGEO.IO.LAS.Import.View.ImportDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:view="clr-namespace:NPFGEO.IO.LAS.Import.View"
+        xmlns:vm="clr-namespace:NPFGEO.IO.LAS.Import.ViewModel"
+        xmlns:npfCommands ="clr-namespace:NPFGEO.Controls;assembly=GeoControls"
+        mc:Ignorable="d"
+        WindowStyle="ToolWindow" ResizeMode="NoResize" WindowStartupLocation="CenterOwner" WindowState="Normal"
+        Title="Импорт файла" Height="450" Width="720">
+
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:SelectEncodingDialog}">
+            <view:SelectEncoding/>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:SelectMetricDialog}">
+            <view:SelectMetric/>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:SelectCurvesDialog}">
+            <view:SelectCurves/>
+        </DataTemplate>
+
+        <Style TargetType="Run" x:Key="StageStyle">
+            <Setter Property="Foreground" Value="LightGray"/>
+            <Setter Property="TextDecorations" Value="None"/>
+            <Style.Triggers>
+                <Trigger Property="IsEnabled" Value="True">
+                    <Setter Property="Foreground" Value="Black"/>
+                    <Setter Property="TextDecorations" Value="Underline"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="LightGray"/>
+                    <Setter Property="TextDecorations" Value="None"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+    </Window.Resources>
+
+    <Window.CommandBindings>
+        <CommandBinding Command="{x:Static npfCommands:NPFGEOCommands.Apply}" CanExecute="Apply_CanExecute" Executed="Apply_Executed"/>
+        <CommandBinding Command="{x:Static npfCommands:NPFGEOCommands.Cancel}" CanExecute="Cancel_CanExecute" Executed="Cancel_Executed"/>
+    </Window.CommandBindings>
+
+
+    <DockPanel>
+
+        <UniformGrid DockPanel.Dock="Bottom" HorizontalAlignment="Right" Columns="4">
+            <UniformGrid.Resources>
+                <Style TargetType="Button">
+                    <Setter Property="Margin" Value="5"/>
+                    <Setter Property="Padding" Value="14, 2, 14, 2"/>
+                </Style>
+            </UniformGrid.Resources>
+            <Button Content="Отмена" Command="{x:Static npfCommands:NPFGEOCommands.Cancel}"/>
+            <Button Content="&lt; Назад" Command="{Binding Path=PreviousCommand, Mode=OneTime}"/>
+            <Button Content="Далее &gt;" Command="{Binding Path=NextCommand, Mode=OneTime}"/>
+            <Button Content="Готово" Command="{x:Static npfCommands:NPFGEOCommands.Apply}"/>
+        </UniformGrid>
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" HorizontalAlignment="Left" Margin="10, 2, 10, 2">
+            <TextBlock FontSize="14" >
+                <Run Text="Выбор кодировки" IsEnabled="{Binding Path=IsSelectEncoding, Mode=OneWay}" Style="{StaticResource StageStyle}"/>
+                <Run Text="&gt;" Foreground="LightGray"/>
+                <Run Text="Выбор метрики" IsEnabled="{Binding Path=IsSelectMetric, Mode=OneWay}" Style="{StaticResource StageStyle}"/>
+                <Run Text="&gt;" Foreground="LightGray"/>
+                <Run Text="Выбор кривых" IsEnabled="{Binding Path=IsSelectCurves, Mode=OneWay}" Style="{StaticResource StageStyle}"/>
+            </TextBlock>
+        </StackPanel>
+
+
+
+        <ContentPresenter Content="{Binding Path=CurrentStage, Mode=OneWay}"/>
+    </DockPanel>
+</Window>
