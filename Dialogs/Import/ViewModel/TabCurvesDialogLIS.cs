@@ -123,6 +123,22 @@ namespace ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             return Selected.ToArray();
         }
 
+        public void RestoreSelectedItems(IEnumerable<Item> items)
+        {
+            Selected.Clear();
+
+            if (items != null)
+            {
+                foreach (var item in items)
+                {
+                    if (item != null && !IsSelected(item))
+                        Selected.Add(item);
+                }
+            }
+
+            RebuildAvailable();
+        }
+
         private static bool IsSameCurve(Item left, Item right)
         {
             if (ReferenceEquals(left, right))

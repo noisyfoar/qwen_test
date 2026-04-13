@@ -1,8 +1,12 @@
-﻿namespace ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
+﻿using System.Collections.Generic;
+using System.Linq;
+
+namespace ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 {
     public class ImportDialogLIS : ViewModelBase
     {
         private ViewModelBase _currentStage;
+        private List<TabCurvesDialogLIS.Item> _selectedCurvesSnapshot = new List<TabCurvesDialogLIS.Item>();
 
         public ImportDialogLIS()
         {
@@ -45,6 +49,7 @@
         {
             if (IsSelectCurves)
             {
+                _selectedCurvesSnapshot = CurvesStage.GetSelectedItems().ToList();
                 CurrentStage = RenameStage;
             }
         }
@@ -58,6 +63,7 @@
         {
             if (IsSelectRename)
             {
+                CurvesStage.RestoreSelectedItems(_selectedCurvesSnapshot);
                 CurrentStage = CurvesStage;
             }
         }
