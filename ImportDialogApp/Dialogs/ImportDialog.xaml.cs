@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Windows;
 using ImportDialogApp.Models;
-using NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel;
+using ImportDialogApp.ViewModels;
 
 namespace ShellExtension.Formats.LIS.Dialogs;
 

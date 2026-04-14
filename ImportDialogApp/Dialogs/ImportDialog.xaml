@@ -126,10 +126,10 @@
                 </GroupBox>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0">
-                    <Button Style="{StaticResource ArrowButtonStyle}" Content=">" Command="{Binding MoveSelectedRightCommand}"/>
-                    <Button Style="{StaticResource ArrowButtonStyle}" Content="<" Command="{Binding MoveSelectedLeftCommand}"/>
-                    <Button Style="{StaticResource ArrowButtonStyle}" Content=">>" Command="{Binding MoveAllRightCommand}"/>
-                    <Button Style="{StaticResource ArrowButtonStyle}" Content="<<" Command="{Binding MoveAllLeftCommand}"/>
+                    <Button Style="{StaticResource ArrowButtonStyle}" Content="&gt;" Command="{Binding MoveSelectedRightCommand}"/>
+                    <Button Style="{StaticResource ArrowButtonStyle}" Content="&lt;" Command="{Binding MoveSelectedLeftCommand}"/>
+                    <Button Style="{StaticResource ArrowButtonStyle}" Content="&gt;&gt;" Command="{Binding MoveAllRightCommand}"/>
+                    <Button Style="{StaticResource ArrowButtonStyle}" Content="&lt;&lt;" Command="{Binding MoveAllLeftCommand}"/>
                 </StackPanel>
 
                 <GroupBox Header="Выбранные кривые" Grid.Column="2">

@@ -26,3 +26,28 @@
 - `ImportDialogApp/Models/ParameterTable.cs`
 - `ImportDialogApp/Models/ParameterRow.cs`
 
+## Запуск и тест в Cursor Cloud
+
+Добавлена конфигурация окружения для Cursor:
+
+- `.cursor/environment.json`
+- `.cursor/install.sh`
+- `.cursor/start.sh`
+- `scripts/test.sh`
+
+Что это дает:
+
+- на старте окружения ставится .NET SDK (если его нет);
+- команда проверки:
+
+```bash
+bash scripts/test.sh
+```
+
+Скрипт проверяет наличие `dotnet`, выполняет `restore` и `build` проекта:
+
+```bash
+dotnet restore ImportDialogApp/ImportDialogApp.csproj -p:EnableWindowsTargeting=true
+dotnet build ImportDialogApp/ImportDialogApp.csproj -c Release --no-restore -p:EnableWindowsTargeting=true
+```
+

@@ -8,7 +8,7 @@ using System.Windows.Data;
 using ImportDialogApp.Infrastructure;
 using ImportDialogApp.Models;
 
-namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel;
+namespace ImportDialogApp.ViewModels;
 
 public sealed class ImportDialogViewModel : INotifyPropertyChanged
 {

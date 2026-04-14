@@ -12,7 +12,7 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
-    private void OpenDialogClick(object sender, RoutedEventArgs e)
+    private void OpenImportDialog_Click(object sender, RoutedEventArgs e)
     {
         IReadOnlyCollection<CurveItem> curves = new[]
         {
