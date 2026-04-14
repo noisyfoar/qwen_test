@@ -1,4 +1,5 @@
 using NPFGEO.Data;
+using NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel;
 using System;
 
 namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
