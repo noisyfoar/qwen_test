@@ -140,10 +140,10 @@
                         <TextBox Grid.Row="0"
                                  Margin="0,0,0,6"
                                  Text="{Binding CurveFilter, UpdateSourceTrigger=PropertyChanged}"/>
-                        <ListBox Grid.Row="1"
+                        <ListBox x:Name="AvailableCurvesList"
+                                 Grid.Row="1"
                                  SelectionMode="Extended"
-                                 ItemsSource="{Binding AvailableCurvesView}"
-                                 SelectedItem="{Binding SelectedAvailableCurve, Mode=TwoWay}">
+                                 ItemsSource="{Binding AvailableCurvesView}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <Grid>
@@ -164,28 +164,32 @@
                 </GroupBox>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0">
-                    <Button Style="{StaticResource ArrowButtonStyle}" Command="{Binding MoveSelectedRightCommand}">
+                    <Button Style="{StaticResource ArrowButtonStyle}"
+                            Command="{Binding MoveSelectedRightCommand}"
+                            CommandParameter="{Binding SelectedItems, ElementName=AvailableCurvesList}">
                         <Button.Content>
                             <StackPanel Orientation="Horizontal">
                                 <Image Name="RightArrow" Width="{StaticResource imageSize}" Height="{StaticResource imageSize}" Margin="0,0,0,0" Source="..\Images32\RightArrow.png"/>
                             </StackPanel>
                         </Button.Content>
                     </Button>
-                    <Button Style="{StaticResource ArrowButtonStyle}" Command="{Binding MoveSelectedRightCommand}">
+                    <Button Style="{StaticResource ArrowButtonStyle}"
+                            Command="{Binding MoveSelectedLeftCommand}"
+                            CommandParameter="{Binding SelectedItems, ElementName=SelectedCurvesList}">
                         <Button.Content>
                             <StackPanel Orientation="Horizontal">
                                 <Image Name="LeftArrow" Width="{StaticResource imageSize}" Height="{StaticResource imageSize}" Margin="0,0,0,0" Source="..\Images32\LeftArrow.png"/>
                             </StackPanel>
                         </Button.Content>
                     </Button>
-                    <Button Style="{StaticResource ArrowButtonStyle}" Command="{Binding MoveSelectedRightCommand}">
+                    <Button Style="{StaticResource ArrowButtonStyle}" Command="{Binding MoveAllRightCommand}">
                         <Button.Content>
                             <StackPanel Orientation="Horizontal">
                                 <Image Name="DoubleRightArrow" Width="{StaticResource imageSize}" Height="{StaticResource imageSize}" Margin="0,0,0,0" Source="..\Images32\DoubleRightArrow.png"/>
                             </StackPanel>
                         </Button.Content>
                     </Button>
-                    <Button Style="{StaticResource ArrowButtonStyle}" Command="{Binding MoveSelectedRightCommand}">
+                    <Button Style="{StaticResource ArrowButtonStyle}" Command="{Binding MoveAllLeftCommand}">
                         <Button.Content>
                             <StackPanel Orientation="Horizontal">
                                 <Image Name="DoubleLeftArrow" Width="{StaticResource imageSize}" Height="{StaticResource imageSize}" Margin="0,0,0,0" Source="..\Images32\DoubleLeftArrow.png"/>
@@ -195,12 +199,12 @@
                 </StackPanel>
 
                 <GroupBox Header="Выбранные кривые" Grid.Column="2">
-                    <DataGrid ItemsSource="{Binding SelectedCurves}"
+                    <DataGrid x:Name="SelectedCurvesList"
+                              ItemsSource="{Binding SelectedCurves}"
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"
                               HeadersVisibility="Column"
-                              SelectionMode="Extended"
-                              SelectedItem="{Binding SelectedSelectedCurve, Mode=TwoWay}">
+                              SelectionMode="Extended">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Исх. имя" Binding="{Binding SourceName}" IsReadOnly="True" Width="3*"/>
                             <DataGridTextColumn Header="Имп. имя" Binding="{Binding ExportName}" Width="4*"/>

@@ -1,6 +1,7 @@
 using NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models;
 using System.Collections.ObjectModel;
 using System.Collections.Generic;
+using System.Collections;
 using System.ComponentModel;
 using System.Windows.Data;
 using System.Linq;
@@ -18,8 +19,6 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModels
 
         private string _curveFilter = string.Empty;
         private ParameterTable _selectedParameterTable;
-        private LISCurveItem _selectedAvailableCurve;
-        private LISCurveItem _selectedSelectedCurve;
 
         public ImportDialogViewModel( IEnumerable<LISCurveItem> curves, IEnumerable<ParameterTable> parameterTables)
         {
@@ -31,8 +30,8 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModels
             _availableCurvesView = CollectionViewSource.GetDefaultView(_availableCurves);
             _availableCurvesView.Filter = FilterCurve;
 
-            MoveSelectedRightCommand = new RelayCommand(_ => MoveSelectedToRight(), _ => SelectedAvailableCurve != null);
-            MoveSelectedLeftCommand = new RelayCommand(_ => MoveSelectedToLeft(), _ => SelectedSelectedCurve != null);
+            MoveSelectedRightCommand = new RelayCommand(MoveSelectedToRight, CanMoveSelectedToRight);
+            MoveSelectedLeftCommand = new RelayCommand(MoveSelectedToLeft, CanMoveSelectedToLeft);
             MoveAllRightCommand = new RelayCommand(_ => MoveAllToRight(), _ => _availableCurves.Count > 0);
             MoveAllLeftCommand = new RelayCommand(_ => MoveAllToLeft(), _ => _selectedCurves.Count > 0);
             DoneCommand = new RelayCommand(_ => Done(), _ => _selectedCurves.Count > 0);
@@ -60,38 +59,6 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModels
 
                 _selectedParameterTable = value;
                 CallPropertyChanged(nameof(SelectedParameterTable));
-            }
-        }
-
-        public LISCurveItem SelectedAvailableCurve
-        {
-            get => _selectedAvailableCurve;
-            set
-            {
-                if (Equals(_selectedAvailableCurve, value))
-                {
-                    return;
-                }
-
-                _selectedAvailableCurve = value;
-                CallPropertyChanged(nameof(SelectedAvailableCurve));
-                RaiseCommandStates();
-            }
-        }
-
-        public LISCurveItem SelectedSelectedCurve
-        {
-            get => _selectedSelectedCurve;
-            set
-            {
-                if (Equals(_selectedSelectedCurve, value))
-                {
-                    return;
-                }
-
-                _selectedSelectedCurve = value;
-                CallPropertyChanged(nameof(SelectedSelectedCurve));
-                RaiseCommandStates();
             }
         }
 
@@ -152,31 +119,74 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModels
         }
 
 
-        private void MoveSelectedToRight()
+        private bool CanMoveSelectedToRight(object parameter)
         {
-            if (SelectedAvailableCurve is null)
+            return GetSelectedItems(parameter).Count > 0;
+        }
+
+        private bool CanMoveSelectedToLeft(object parameter)
+        {
+            return GetSelectedItems(parameter).Count > 0;
+        }
+
+        private static List<LISCurveItem> GetSelectedItems(object parameter)
+        {
+            var result = new List<LISCurveItem>();
+            var selectedItems = parameter as IEnumerable;
+            if (selectedItems == null)
+            {
+                return result;
+            }
+
+            foreach (var item in selectedItems)
+            {
+                var curve = item as LISCurveItem;
+                if (curve != null)
+                {
+                    result.Add(curve);
+                }
+            }
+
+            return result;
+        }
+
+        private void MoveSelectedToRight(object parameter)
+        {
+            var selectedItems = GetSelectedItems(parameter);
+            if (selectedItems.Count == 0)
             {
                 return;
             }
 
-            var curve = SelectedAvailableCurve;
-            _availableCurves.Remove(curve);
-            _selectedCurves.Add(new LISCurveItem(curve.Source));
-            SelectedAvailableCurve = null;
+            foreach (var curve in selectedItems.ToList())
+            {
+                if (!_availableCurves.Remove(curve))
+                {
+                    continue;
+                }
+
+                _selectedCurves.Add(new LISCurveItem(curve.Source));
+            }
             RaiseCommandStates();
         }
 
-        private void MoveSelectedToLeft()
+        private void MoveSelectedToLeft(object parameter)
         {
-            if (SelectedSelectedCurve is null)
+            var selectedItems = GetSelectedItems(parameter);
+            if (selectedItems.Count == 0)
             {
                 return;
             }
 
-            var selected = SelectedSelectedCurve;
-            _selectedCurves.Remove(selected);
-            _availableCurves.Add(selected);
-            SelectedSelectedCurve = null;
+            foreach (var selected in selectedItems.ToList())
+            {
+                if (!_selectedCurves.Remove(selected))
+                {
+                    continue;
+                }
+
+                _availableCurves.Add(selected);
+            }
             RaiseCommandStates();
         }
 
