@@ -1,0 +1,30 @@
+<Window x:Class="ImportDialogApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Demo Launcher" Height="220" Width="420"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Демо запуска ImportDialog"
+                   FontWeight="Bold"
+                   FontSize="18"/>
+        <TextBlock Grid.Row="1"
+                   Margin="0,8,0,0"
+                   TextWrapping="Wrap"
+                   Text="Нажмите кнопку ниже, чтобы открыть диалог импорта и выбрать кривые."/>
+
+        <Button Grid.Row="2"
+                Margin="0,16,0,0"
+                Width="180"
+                Height="32"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Top"
+                Click="OpenImportDialog_Click"
+                Content="Открыть ImportDialog"/>
+    </Grid>
+</Window>
