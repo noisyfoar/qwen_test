@@ -155,8 +155,8 @@ public sealed class ImportDialogViewModel : INotifyPropertyChanged
             return true;
         }
 
-        return curve.SourceName.Contains(_curveFilter, StringComparison.OrdinalIgnoreCase)
-               || curve.Units.Contains(_curveFilter, StringComparison.OrdinalIgnoreCase);
+        return curve.SourceName.IndexOf(_curveFilter, StringComparison.OrdinalIgnoreCase) >= 0
+               || curve.Units.IndexOf(_curveFilter, StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private static IEnumerable<ParameterTable> BuildDefaultParameterTables()
