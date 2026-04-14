@@ -1,10 +1,8 @@
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 using ImportDialogApp.Models;
 
 namespace ImportDialogApp.ViewModels;
 
-public sealed class CurveSelectionRowViewModel : INotifyPropertyChanged
+public sealed class CurveSelectionRowViewModel : ViewModelBase
 {
     private string _exportName;
     private string _description;
@@ -71,10 +69,4 @@ public sealed class CurveSelectionRowViewModel : INotifyPropertyChanged
         }
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
-
-    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
 }

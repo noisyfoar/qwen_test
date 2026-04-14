@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Windows.Data;
 using ImportDialogApp.Infrastructure;
 using ImportDialogApp.Models;
 
 namespace ImportDialogApp.ViewModels;
 
-public sealed class ImportDialogViewModel : INotifyPropertyChanged
+public sealed class ImportDialogViewModel : ViewModelBase
 {
     private readonly ObservableCollection<CurveItem> _availableCurves;
     private readonly ObservableCollection<CurveSelectionRowViewModel> _selectedCurves;
@@ -45,7 +44,6 @@ public sealed class ImportDialogViewModel : INotifyPropertyChanged
         CancelCommand = new RelayCommand(_ => RequestCancel?.Invoke(this, EventArgs.Empty));
     }
 
-    public event PropertyChangedEventHandler? PropertyChanged;
     public event EventHandler? RequestClose;
     public event EventHandler? RequestCancel;
 
@@ -250,8 +248,4 @@ public sealed class ImportDialogViewModel : INotifyPropertyChanged
         DoneCommand.RaiseCanExecuteChanged();
     }
 
-    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-    }
 }
