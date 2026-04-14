@@ -44,10 +44,10 @@
 bash scripts/test.sh
 ```
 
-Скрипт проверяет наличие `dotnet`, выполняет `restore` и `build` проекта:
+Скрипт проверяет наличие `dotnet`, выполняет `restore` и `build` проекта (`.NET Framework 4.8`):
 
 ```bash
-dotnet restore ImportDialogApp/ImportDialogApp.csproj -p:EnableWindowsTargeting=true
-dotnet build ImportDialogApp/ImportDialogApp.csproj -c Release --no-restore -p:EnableWindowsTargeting=true
+dotnet restore ImportDialogApp/ImportDialogApp.csproj
+dotnet build ImportDialogApp/ImportDialogApp.csproj -c Release --no-restore
 ```
 

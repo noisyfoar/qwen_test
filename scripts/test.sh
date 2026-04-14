@@ -9,9 +9,9 @@ echo "Running .NET diagnostics..."
 dotnet --info >/dev/null
 
 echo "Restoring project..."
-dotnet restore "ImportDialogApp/ImportDialogApp.csproj" -p:EnableWindowsTargeting=true
+dotnet restore "ImportDialogApp/ImportDialogApp.csproj"
 
 echo "Building project..."
-dotnet build "ImportDialogApp/ImportDialogApp.csproj" -c Release --no-restore -p:EnableWindowsTargeting=true
+dotnet build "ImportDialogApp/ImportDialogApp.csproj" -c Release --no-restore
 
 echo "Done."
