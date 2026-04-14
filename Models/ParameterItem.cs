@@ -25,6 +25,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
                 }
 
                 _name = value;
+                CallPropertyChanged(nameof(Name));
             }
         }
 
@@ -39,6 +40,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
                 }
 
                 _value = value;
+                CallPropertyChanged(nameof(Value));
             }
         }
     }
@@ -48,7 +50,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
         public ParameterTable(string name, IEnumerable<ParameterItem> rows = null)
         {
             Name = name;
-            Rows = new ObservableCollection<ParameterItem>(rows);
+            Rows = new ObservableCollection<ParameterItem>(rows ?? new List<ParameterItem>());
         }
 
         public string Name { get; }

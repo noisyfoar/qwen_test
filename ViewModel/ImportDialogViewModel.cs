@@ -12,8 +12,6 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
     public sealed class ImportDialogViewModel : ViewModelBase
     {
-
-        #region private var
         private readonly ObservableCollection<LISCurveItem> _availableCurves;
         private readonly ObservableCollection<LISCurveItem> _selectedCurves;
         private readonly ObservableCollection<ParameterTable> _parameterTables;
@@ -21,14 +19,16 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
         private string _curveFilter = string.Empty;
         private ParameterTable _selectedParameterTable;
-        #endregion
+        private NamedItem _selectedTemplate;
+        private NamedItem _currentMnemonicsSet;
 
-        #region public var
         public ICollectionView AvailableCurvesView => _availableCurvesView;
 
         public ObservableCollection<LISCurveItem> SelectedCurves => _selectedCurves;
 
         public ObservableCollection<ParameterTable> ParameterTables => _parameterTables;
+        public ObservableCollection<NamedItem> Templates { get; }
+        public ObservableCollection<NamedItem> MnemonicsSets { get; }
 
         public ParameterTable SelectedParameterTable
         {
@@ -42,6 +42,36 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
                 _selectedParameterTable = value;
                 CallPropertyChanged(nameof(SelectedParameterTable));
+            }
+        }
+
+        public NamedItem SelectedTemplate
+        {
+            get => _selectedTemplate;
+            set
+            {
+                if (Equals(_selectedTemplate, value))
+                {
+                    return;
+                }
+
+                _selectedTemplate = value;
+                CallPropertyChanged(nameof(SelectedTemplate));
+            }
+        }
+
+        public NamedItem CurrentMnemonicsSet
+        {
+            get => _currentMnemonicsSet;
+            set
+            {
+                if (Equals(_currentMnemonicsSet, value))
+                {
+                    return;
+                }
+
+                _currentMnemonicsSet = value;
+                CallPropertyChanged(nameof(CurrentMnemonicsSet));
             }
         }
 
@@ -61,34 +91,70 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             }
         }
 
-        public RelayCommand AddCurves { get; }
-        public RelayCommand RemoveCurves { get; }
-        public RelayCommand SelectAll { get; }
-        public RelayCommand UnselectAll { get; }
+        public RelayCommand MoveSelectedRightCommand { get; }
+        public RelayCommand MoveSelectedLeftCommand { get; }
+        public RelayCommand MoveAllRightCommand { get; }
+        public RelayCommand MoveAllLeftCommand { get; }
+        public RelayCommand DoneCommand { get; }
+        public RelayCommand CancelCommand { get; }
+        public RelayCommand SaveTemplateCommand { get; }
+        public RelayCommand SaveAsTemplateCommand { get; }
 
-        #endregion
+        // Backward compatible aliases.
+        public RelayCommand AddCurves => MoveSelectedRightCommand;
+        public RelayCommand RemoveCurves => MoveSelectedLeftCommand;
+        public RelayCommand SelectAll => MoveAllRightCommand;
+        public RelayCommand UnselectAll => MoveAllLeftCommand;
+        public RelayCommand ConfirmCommand => DoneCommand;
 
-        public ImportDialogViewModel( IEnumerable<LISCurveItem> curves, IEnumerable<ParameterTable> parameterTables)
+        public event EventHandler RequestClose;
+        public event EventHandler RequestCancel;
+
+        public ImportDialogViewModel(IEnumerable<LISCurveItem> curves, IEnumerable<ParameterTable> parameterTables)
         {
             _availableCurves = new ObservableCollection<LISCurveItem>(curves ?? Enumerable.Empty<LISCurveItem>());
             _selectedCurves = new ObservableCollection<LISCurveItem>();
             _parameterTables = new ObservableCollection<ParameterTable>(parameterTables ?? Enumerable.Empty<ParameterTable>());
+
+            if (_parameterTables.Count == 0)
+            {
+                _parameterTables.Add(new ParameterTable("Таблица 1", Array.Empty<ParameterItem>()));
+            }
+
             _selectedParameterTable = _parameterTables.FirstOrDefault();
 
             _availableCurvesView = CollectionViewSource.GetDefaultView(_availableCurves);
             _availableCurvesView.Filter = FilterCurve;
 
-            AddCurves = new RelayCommand(MoveSelectedToRight, CanMoveSelectedToRight);
-            RemoveCurves = new RelayCommand(MoveSelectedToLeft, CanMoveSelectedToLeft);
-            SelectAll = new RelayCommand(_ => MoveAllToRight(), _ => _availableCurves.Count > 0);
-            UnselectAll = new RelayCommand(_ => MoveAllToLeft(), _ => _selectedCurves.Count > 0);
+            Templates = new ObservableCollection<NamedItem>
+            {
+                new NamedItem("Шаблон 1"),
+                new NamedItem("Шаблон 2"),
+                new NamedItem("Шаблон 3"),
+            };
+            MnemonicsSets = new ObservableCollection<NamedItem>
+            {
+                new NamedItem("Набор 1"),
+                new NamedItem("Набор 2"),
+            };
+            SelectedTemplate = Templates.FirstOrDefault();
+            CurrentMnemonicsSet = MnemonicsSets.FirstOrDefault();
+
+            MoveSelectedRightCommand = new RelayCommand(MoveSelectedToRight, CanMoveSelectedToRight);
+            MoveSelectedLeftCommand = new RelayCommand(MoveSelectedToLeft, CanMoveSelectedToLeft);
+            MoveAllRightCommand = new RelayCommand(_ => MoveAllToRight(), _ => _availableCurves.Count > 0);
+            MoveAllLeftCommand = new RelayCommand(_ => MoveAllToLeft(), _ => _selectedCurves.Count > 0);
+            DoneCommand = new RelayCommand(_ => RequestClose?.Invoke(this, EventArgs.Empty), _ => _selectedCurves.Count > 0);
+            CancelCommand = new RelayCommand(_ => RequestCancel?.Invoke(this, EventArgs.Empty));
+            SaveTemplateCommand = new RelayCommand(_ => { });
+            SaveAsTemplateCommand = new RelayCommand(_ => { });
         }
+
         public string SearchText
         {
             get => CurveFilter;
             set => CurveFilter = value;
         }
-
 
         private bool FilterCurve(object obj)
         {
@@ -102,15 +168,15 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 return true;
             }
 
-            return curve.Name.IndexOf(_curveFilter, StringComparison.OrdinalIgnoreCase) >= 0
+            return curve.SourceName.IndexOf(_curveFilter, StringComparison.OrdinalIgnoreCase) >= 0
                    || curve.Units.IndexOf(_curveFilter, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        #region command
         private bool CanMoveSelectedToRight(object parameter)
         {
             return GetSelectedItems(parameter).Count > 0;
         }
+
         private void MoveSelectedToRight(object parameter)
         {
             var selectedItems = GetSelectedItems(parameter);
@@ -129,11 +195,15 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
                 _selectedCurves.Add(new LISCurveItem(curve.Source));
             }
+
+            RaiseCommandStates();
         }
+
         private bool CanMoveSelectedToLeft(object parameter)
         {
-             return GetSelectedItems(parameter).Count > 0;
+            return GetSelectedItems(parameter).Count > 0;
         }
+
         private void MoveSelectedToLeft(object parameter)
         {
             var selectedItems = GetSelectedItems(parameter);
@@ -152,6 +222,8 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
                 _availableCurves.Add(selected);
             }
+
+            RaiseCommandStates();
         }
 
         private void MoveAllToRight()
@@ -162,6 +234,8 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 _availableCurves.Remove(curve);
                 _selectedCurves.Add(new LISCurveItem(curve.Source));
             }
+
+            RaiseCommandStates();
         }
 
         private void MoveAllToLeft()
@@ -172,10 +246,10 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 _selectedCurves.Remove(selected);
                 _availableCurves.Add(selected);
             }
-        }
-        #endregion
 
-        #region utils
+            RaiseCommandStates();
+        }
+
         private static List<LISCurveItem> GetSelectedItems(object parameter)
         {
             var result = new List<LISCurveItem>();
@@ -196,6 +270,24 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
             return result;
         }
-        #endregion
+
+        private void RaiseCommandStates()
+        {
+            MoveSelectedRightCommand.RaiseCanExecuteChanged();
+            MoveSelectedLeftCommand.RaiseCanExecuteChanged();
+            MoveAllRightCommand.RaiseCanExecuteChanged();
+            MoveAllLeftCommand.RaiseCanExecuteChanged();
+            DoneCommand.RaiseCanExecuteChanged();
+        }
+
+        public sealed class NamedItem
+        {
+            public NamedItem(string name)
+            {
+                Name = name ?? string.Empty;
+            }
+
+            public string Name { get; }
+        }
     }
 }
