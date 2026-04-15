@@ -1,4 +1,6 @@
 using NPFGEO.Data;
+using NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel;
+using System;
 
 namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
 {
@@ -8,40 +10,69 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
 
         public Curve Source { get; }
 
-        private string _oldName;
+        private readonly string _sourceName;
+        private bool _isEnabled = true;
 
-        public string Name
+        public string SourceName
         {
-            get { return _oldName; }
+            get { return _sourceName; }
         }
-        public string NewName
+
+        public bool IsEnabled
         {
+            get => _isEnabled;
             set
             {
-                Source.Caption = value;
+                if (_isEnabled == value)
+                {
+                    return;
+                }
+
+                _isEnabled = value;
+                CallPropertyChanged(nameof(IsEnabled));
+            }
+        }
+
+        public string ExportName
+        {
+            get { return Source.Caption; }
+            set
+            {
+                Source.Caption = value ?? string.Empty;
+                CallPropertyChanged(nameof(ExportName));
+                CallPropertyChanged(nameof(NewName));
                 CallPropertyChanged(nameof(Name));
             }
-            get { return Source.Caption; }
+        }
+
+        public string Name => SourceName;
+
+        public string NewName
+        {
+            get => ExportName;
+            set => ExportName = value;
         }
 
         public string Description
         {
             set 
             { 
-                Source.Description = value;
+                Source.Description = value ?? string.Empty;
                 CallPropertyChanged(nameof(Description));
             }
-            get { return Source.Description; }
+            get { return Source.Description ?? string.Empty; }
         }
+
         public string Units
         {
             set 
             { 
-                Source.Units = value;
+                Source.Units = value ?? string.Empty;
                 CallPropertyChanged(nameof(Units));
             }
-            get { return Source.Units; }
+            get { return Source.Units ?? string.Empty; }
         }
+
         public double Begin
         {
             set 
@@ -61,10 +92,11 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
             }
             get { return (double)Source.GetDelta(); }
         }
+
         public LISCurveItem(Curve source)
         {
-            Source = source;
-            _oldName = source.Caption;
+            Source = source ?? throw new ArgumentNullException(nameof(source));
+            _sourceName = source.Caption ?? string.Empty;
         }
 
     }
