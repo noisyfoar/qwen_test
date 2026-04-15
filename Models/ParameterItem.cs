@@ -1,59 +1,25 @@
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
 {
-    public sealed class ParameterItem : ViewModelBase
-    {
-        private string _name;
-        private string _value;
-
-        public ParameterItem(string name, string value)
-        {
-            _name = name;
-            _value = value;
-        }
-
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                if (_name == value)
-                {
-                    return;
-                }
-
-                _name = value;
-            }
-        }
-
-        public string Value
-        {
-            get => _value;
-            set
-            {
-                if (_value == value)
-                {
-                    return;
-                }
-
-                _value = value;
-            }
-        }
-    }
-
     public sealed class ParameterTable
     {
-        public ParameterTable(string name, IEnumerable<ParameterItem> rows = null)
+        public ParameterTable(string name, IEnumerable<string> columns, IEnumerable<IReadOnlyList<string>> rows = null)
         {
             Name = name;
-            Rows = new ObservableCollection<ParameterItem>(rows);
+
+            Columns = (columns ?? Enumerable.Empty<string>()).ToList();
+            Rows = (rows ?? Enumerable.Empty<IReadOnlyList<string>>())
+                .Select(r => (IReadOnlyList<string>)r.ToList())
+                .ToList();
         }
 
         public string Name { get; }
 
-        public ObservableCollection<ParameterItem> Rows { get; }
+        public IReadOnlyList<string> Columns { get; }
+        public IReadOnlyList<IReadOnlyList<string>> Rows { get; }
+
     }
 
 }

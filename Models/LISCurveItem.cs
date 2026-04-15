@@ -1,70 +1,146 @@
 using NPFGEO.Data;
+using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
 {
 
-    public sealed class LISCurveItem : ViewModelBase
+    public sealed class LISCurveItem : INotifyPropertyChanged
     {
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public Curve Source { get; }
 
-        private string _oldName;
+        private readonly string _sourceName;
+        private bool _isEnabled = true;
+        private int _precision = 2;
 
-        public string Name
+        public string SourceName
         {
-            get { return _oldName; }
+            get { return _sourceName; }
         }
-        public string NewName
+
+        public bool IsEnabled
         {
+            get => _isEnabled;
             set
             {
-                Source.Caption = value;
-                CallPropertyChanged(nameof(Name));
+                if (_isEnabled == value)
+                {
+                    return;
+                }
+
+                _isEnabled = value;
+                OnPropertyChanged();
             }
+        }
+
+        public int Precision
+        {
+            get => _precision;
+            set
+            {
+                if (_precision == value)
+                {
+                    return;
+                }
+
+                _precision = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string ExportName
+        {
             get { return Source.Caption; }
+            set
+            {
+                Source.Caption = value ?? string.Empty;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(NewName));
+                OnPropertyChanged(nameof(Name));
+            }
+        }
+
+        public string Name => SourceName;
+
+        public string NewName
+        {
+            get => ExportName;
+            set => ExportName = value;
         }
 
         public string Description
         {
             set 
             { 
-                Source.Description = value;
-                CallPropertyChanged(nameof(Description));
+                Source.Description = value ?? string.Empty;
+                OnPropertyChanged();
             }
-            get { return Source.Description; }
+            get { return Source.Description ?? string.Empty; }
         }
+
         public string Units
         {
             set 
             { 
-                Source.Units = value;
-                CallPropertyChanged(nameof(Units));
+                Source.Units = value ?? string.Empty;
+                OnPropertyChanged();
             }
-            get { return Source.Units; }
+            get { return Source.Units ?? string.Empty; }
         }
-        public double Begin
+
+        public bool HasBeginDelta => Is2D();
+        public bool Is1D => !Is2D();
+
+        public double? Begin
         {
             set 
-            { 
-                Source.SetBegin(value);
-                CallPropertyChanged(nameof(Begin));
+            {
+                if(value != null && Is2D())
+                {
+                    Source.SetBegin((double)value);
+                    OnPropertyChanged();
+                }
             }
             get 
-            { return (double)Source.GetBegin(); }
+            {
+                if (Is2D())
+                    return (double)Source.GetBegin();
+                return null;
+            }
         }
-        public double Delta
+        public double? Delta
         {
             set
             {
-                Source.SetDelta(value);
-                CallPropertyChanged(nameof(Delta));
+                if (value != null && Is2D())
+                {
+                    Source.SetDelta((double)value);
+                    OnPropertyChanged();
+                }
             }
-            get { return (double)Source.GetDelta(); }
+            get
+            {
+                if (Is2D())
+                    return (double)Source.GetDelta();
+                return null;
+            }
         }
+
+        private bool Is2D() => Source.DataMatrix.Columns != 1;
+
         public LISCurveItem(Curve source)
         {
-            Source = source;
-            _oldName = source.Caption;
+            Source = source ?? throw new ArgumentNullException(nameof(source));
+            _sourceName = source.Caption ?? string.Empty;
+        }
+
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
     }

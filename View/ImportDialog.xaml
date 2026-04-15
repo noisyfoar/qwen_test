@@ -1,7 +1,8 @@
-<Window x:Class="ShellExtension.Formats.LIS.Dialogs.Import.View.ImportDialog"
+<Window x:Class="NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.View.ImportDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="clr-namespace:NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.View"
         Title="Настройка LIS"
         Height="600"
         Width="1000">
@@ -15,7 +16,11 @@
             <Setter Property="Padding" Value="8,2"/>
             <Setter Property="MinWidth" Value="36"/>
         </Style>
-
+        <Style x:Key="RangeTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Width" Value="90"/>
+            <Setter Property="Margin" Value="6,0,0,0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Right"/>
+        </Style>
     </Window.Resources>
 
     <DockPanel LastChildFill="True">
@@ -34,10 +39,15 @@
 
         <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8,3">
             <TextBlock Text="Старт:" VerticalAlignment="Center"/>
-            <TextBox Width="90" Margin="6,0,0,0" Text="0"/>
+            <TextBox Style="{StaticResource RangeTextBoxStyle}"
+                     Text="{Binding Start, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
             <TextBlock Text="Стоп:" Margin="12,0,0,0" VerticalAlignment="Center"/>
-            <TextBox Width="90" Margin="6,0,0,0" Text="100"/>
-            <Button Content="Весь диапазон" Margin="12,0,0,0" Padding="12,2"/>
+            <TextBox Style="{StaticResource RangeTextBoxStyle}"
+                     Text="{Binding Stop, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+            <Button Content="Весь диапазон"
+                    Margin="12,0,0,0"
+                    Padding="12,2"
+                    Command="{Binding UseFullRangeCommand}"/>
         </StackPanel>
 
         <Separator DockPanel.Dock="Top"/>
@@ -107,28 +117,31 @@
 
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
                         <TextBlock Text="Таблица:" VerticalAlignment="Center"/>
-                        <ComboBox Width="220"
+                        <ComboBox Width="160"
                                   Margin="6,0,0,0"
                                   ItemsSource="{Binding ParameterTables}"
                                   DisplayMemberPath="Name"
+                                  SelectionChanged="ComboBox_SelectionChanged"
                                   SelectedItem="{Binding SelectedParameterTable}"/>
                     </StackPanel>
 
                     <DataGrid Grid.Row="1"
+                              x:Name="ParametersGrid"
                               ItemsSource="{Binding SelectedParameterTable.Rows}"
                               AutoGenerateColumns="False"
-                              CanUserAddRows="True"
-                              CanUserDeleteRows="True"
+                              IsReadOnly="True"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
                               HeadersVisibility="Column"/>
-                    
+
                 </Grid>
             </GroupBox>
 
             <Grid Grid.Column="1">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="3*"/>
                 </Grid.ColumnDefinitions>
 
                 <GroupBox Header="Доступные кривые" Grid.Column="0">
@@ -140,10 +153,10 @@
                         <TextBox Grid.Row="0"
                                  Margin="0,0,0,6"
                                  Text="{Binding CurveFilter, UpdateSourceTrigger=PropertyChanged}"/>
-                        <ListBox Grid.Row="1"
+                        <ListBox x:Name="AvailableCurvesList"
+                                 Grid.Row="1"
                                  SelectionMode="Extended"
-                                 ItemsSource="{Binding AvailableCurvesView}"
-                                 SelectedItem="{Binding SelectedAvailableCurve, Mode=TwoWay}">
+                                 ItemsSource="{Binding AvailableCurvesView}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <Grid>
@@ -164,28 +177,32 @@
                 </GroupBox>
 
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0">
-                    <Button Style="{StaticResource ArrowButtonStyle}" Command="{Binding MoveSelectedRightCommand}">
+                    <Button Style="{StaticResource ArrowButtonStyle}"
+                            Command="{Binding MoveSelectedRightCommand}"
+                            CommandParameter="{Binding ElementName=AvailableCurvesList, Path=SelectedItems}">
                         <Button.Content>
                             <StackPanel Orientation="Horizontal">
                                 <Image Name="RightArrow" Width="{StaticResource imageSize}" Height="{StaticResource imageSize}" Margin="0,0,0,0" Source="..\Images32\RightArrow.png"/>
                             </StackPanel>
                         </Button.Content>
                     </Button>
-                    <Button Style="{StaticResource ArrowButtonStyle}" Command="{Binding MoveSelectedRightCommand}">
+                    <Button Style="{StaticResource ArrowButtonStyle}"
+                            Command="{Binding MoveSelectedLeftCommand}"
+                            CommandParameter="{Binding ElementName=SelectedCurvesGrid, Path=SelectedItems}">
                         <Button.Content>
                             <StackPanel Orientation="Horizontal">
                                 <Image Name="LeftArrow" Width="{StaticResource imageSize}" Height="{StaticResource imageSize}" Margin="0,0,0,0" Source="..\Images32\LeftArrow.png"/>
                             </StackPanel>
                         </Button.Content>
                     </Button>
-                    <Button Style="{StaticResource ArrowButtonStyle}" Command="{Binding MoveSelectedRightCommand}">
+                    <Button Style="{StaticResource ArrowButtonStyle}" Command="{Binding MoveAllRightCommand}">
                         <Button.Content>
                             <StackPanel Orientation="Horizontal">
                                 <Image Name="DoubleRightArrow" Width="{StaticResource imageSize}" Height="{StaticResource imageSize}" Margin="0,0,0,0" Source="..\Images32\DoubleRightArrow.png"/>
                             </StackPanel>
                         </Button.Content>
                     </Button>
-                    <Button Style="{StaticResource ArrowButtonStyle}" Command="{Binding MoveSelectedRightCommand}">
+                    <Button Style="{StaticResource ArrowButtonStyle}" Command="{Binding MoveAllLeftCommand}">
                         <Button.Content>
                             <StackPanel Orientation="Horizontal">
                                 <Image Name="DoubleLeftArrow" Width="{StaticResource imageSize}" Height="{StaticResource imageSize}" Margin="0,0,0,0" Source="..\Images32\DoubleLeftArrow.png"/>
@@ -195,18 +212,18 @@
                 </StackPanel>
 
                 <GroupBox Header="Выбранные кривые" Grid.Column="2">
-                    <DataGrid ItemsSource="{Binding SelectedCurves}"
+                    <DataGrid x:Name="SelectedCurvesGrid"
+                              ItemsSource="{Binding SelectedCurves}"
                               AutoGenerateColumns="False"
                               CanUserAddRows="False"
                               HeadersVisibility="Column"
-                              SelectionMode="Extended"
-                              SelectedItem="{Binding SelectedSelectedCurve, Mode=TwoWay}">
+                              SelectionMode="Extended">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Исх. имя" Binding="{Binding SourceName}" IsReadOnly="True" Width="3*"/>
                             <DataGridTextColumn Header="Имп. имя" Binding="{Binding ExportName}" Width="4*"/>
                             <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="4*"/>
-                            <DataGridTextColumn Header="Начала" Binding="{Binding Begin}" Width="*" />
-                            <DataGridTextColumn Header="Период дискретизации" Binding="{Binding Delta}" Width="*"/>
+                            <DataGridTextColumn Header="Начало отсчета" Binding="{Binding Begin}" Width="120" IsReadOnly="{Binding Is1D}"/>
+                            <DataGridTextColumn Header="Период дискретизации" Binding="{Binding Delta}" Width="170" IsReadOnly="{Binding Is1D}"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>
