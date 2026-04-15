@@ -1,9 +1,11 @@
 using NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models;
+using Microsoft.Win32;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows.Data;
@@ -18,10 +20,14 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         private readonly ObservableCollection<LISCurveItem> _selectedCurves;
         private readonly ObservableCollection<ParameterTable> _parameterTables;
         private readonly ICollectionView _availableCurvesView;
+        private static readonly string TemplatesDirectoryPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            "Genesis",
+            "Export templates");
 
         private string _curveFilter = string.Empty;
         private ParameterTable _selectedParameterTable;
-        private NamedItem _selectedTemplate;
+        private ExportTemplate _selectedTemplate;
         private NamedItem _currentMnemonicsSet;
 
         public ICollectionView AvailableCurvesView => _availableCurvesView;
@@ -29,7 +35,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         public ObservableCollection<LISCurveItem> SelectedCurves => _selectedCurves;
 
         public ObservableCollection<ParameterTable> ParameterTables => _parameterTables;
-        public ObservableCollection<NamedItem> Templates { get; }
+        public ObservableCollection<ExportTemplate> Templates { get; }
         public ObservableCollection<NamedItem> MnemonicsSets { get; }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -49,7 +55,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             }
         }
 
-        public NamedItem SelectedTemplate
+        public ExportTemplate SelectedTemplate
         {
             get => _selectedTemplate;
             set
@@ -61,6 +67,8 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
                 _selectedTemplate = value;
                 OnPropertyChanged();
+                ApplyTemplate();
+                RaiseCommandStates();
             }
         }
 
@@ -117,17 +125,13 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             _availableCurvesView = CollectionViewSource.GetDefaultView(_allCurves);
             _availableCurvesView.Filter = FilterCurve;
 
-            Templates = new ObservableCollection<NamedItem>
-            {
-                new NamedItem("Шаблон 1"),
-                new NamedItem("Шаблон 2"),
-                new NamedItem("Шаблон 3"),
-            };
+            Templates = new ObservableCollection<ExportTemplate>();
             MnemonicsSets = new ObservableCollection<NamedItem>
             {
                 new NamedItem("Набор 1"),
                 new NamedItem("Набор 2"),
             };
+            RefreshTemplates();
             SelectedTemplate = Templates.FirstOrDefault();
             CurrentMnemonicsSet = MnemonicsSets.FirstOrDefault();
 
@@ -139,8 +143,8 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             DoneCommand = new DelegateCommand(_ => RequestClose?.Invoke(this, EventArgs.Empty), _ => _selectedCurves.Count > 0);
             CancelCommand = new DelegateCommand(_ => RequestCancel?.Invoke(this, EventArgs.Empty));
 
-            SaveTemplateCommand = new DelegateCommand(_ => { });
-            SaveAsTemplateCommand = new DelegateCommand(_ => { });
+            SaveTemplateCommand = new DelegateCommand(_ => SaveTemplate(), _ => CanSaveTemplate());
+            SaveAsTemplateCommand = new DelegateCommand(_ => SaveTemplateAs(), _ => CanSaveTemplateAs());
         }
 
         public string SearchText
@@ -284,6 +288,175 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             }
 
             return result;
+        }
+
+        private void ApplyTemplate()
+        {
+            if (_selectedTemplate != null)
+            {
+                ApplyTemplate(_selectedTemplate);
+            }
+        }
+
+        private void ApplyTemplate(ExportTemplate template)
+        {
+            if (template == null)
+            {
+                return;
+            }
+
+            MoveAllToLeft();
+            foreach (var item in template.Items ?? Enumerable.Empty<ExportTemplateItem>())
+            {
+                var source = _allCurves.FirstOrDefault(curve => curve.SourceName == item.SourceName);
+                if (source == null)
+                {
+                    continue;
+                }
+
+                AddCurve(source);
+                source.ExportName = item.ExportName ?? string.Empty;
+                source.Precision = item.Precision;
+                source.Description = item.Description ?? string.Empty;
+            }
+
+            _availableCurvesView.Refresh();
+            RaiseCommandStates();
+        }
+
+        private ExportTemplate ToTemplate()
+        {
+            var template = new ExportTemplate();
+            foreach (var item in _selectedCurves)
+            {
+                template.Items.Add(ToTemplateItem(item));
+            }
+
+            return template;
+        }
+
+        private static ExportTemplateItem ToTemplateItem(LISCurveItem item)
+        {
+            return new ExportTemplateItem
+            {
+                SourceName = item.SourceName,
+                ExportName = item.ExportName,
+                Description = item.Description,
+                Precision = item.Precision,
+            };
+        }
+
+        private bool CanSaveTemplate()
+        {
+            return SelectedTemplate != null;
+        }
+
+        private void SaveTemplate()
+        {
+            if (SelectedTemplate == null)
+            {
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(SelectedTemplate.FileName))
+            {
+                SaveTemplateAs();
+                return;
+            }
+
+            var writer = new ExportTemplateReaderWriter();
+            var template = ToTemplate();
+            template.FileName = SelectedTemplate.FileName;
+            template.Name = SelectedTemplate.Name;
+            writer.Write(template.FileName, template);
+
+            var index = Templates.IndexOf(SelectedTemplate);
+            if (index >= 0)
+            {
+                Templates[index] = template;
+            }
+            else
+            {
+                Templates.Add(template);
+            }
+
+            SelectedTemplate = template;
+        }
+
+        private bool CanSaveTemplateAs()
+        {
+            return _selectedCurves.Count > 0;
+        }
+
+        private void SaveTemplateAs()
+        {
+            EnsureTemplatesDirectoryExists();
+
+            var saveFileDialog = new SaveFileDialog
+            {
+                InitialDirectory = TemplatesDirectoryPath,
+                OverwritePrompt = true,
+                Filter = "XML File (*.xml)|*.xml",
+                AddExtension = true,
+                DefaultExt = ".xml",
+            };
+
+            var result = saveFileDialog.ShowDialog();
+            if (result != true)
+            {
+                return;
+            }
+
+            var fullName = saveFileDialog.FileName;
+            var template = ToTemplate();
+            template.Name = Path.GetFileNameWithoutExtension(fullName);
+            template.FileName = fullName;
+
+            var writer = new ExportTemplateReaderWriter();
+            writer.Write(fullName, template);
+
+            var replaced = Templates.FirstOrDefault(existing =>
+                string.Equals(existing.FileName, fullName, StringComparison.OrdinalIgnoreCase));
+
+            if (replaced != null)
+            {
+                var index = Templates.IndexOf(replaced);
+                Templates[index] = template;
+            }
+            else
+            {
+                Templates.Add(template);
+            }
+
+            SelectedTemplate = template;
+        }
+
+        private void RefreshTemplates()
+        {
+            Templates.Clear();
+            EnsureTemplatesDirectoryExists();
+
+            var reader = new ExportTemplateReaderWriter();
+            foreach (var file in Directory.GetFiles(TemplatesDirectoryPath, "*.xml", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    var template = reader.Read(file);
+                    Templates.Add(template);
+                }
+                catch
+                {
+                    // Skip invalid template files so one malformed XML does not break the dialog.
+                }
+            }
+        }
+
+        private static void EnsureTemplatesDirectoryExists()
+        {
+            if (!Directory.Exists(TemplatesDirectoryPath))
+            {
+                Directory.CreateDirectory(TemplatesDirectoryPath);
+            }
         }
 
 
