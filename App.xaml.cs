@@ -26,6 +26,14 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import
                     new ParameterItem("Step", "0.1"),
                     new ParameterItem("NullValue", "-999.25"),
                 }),
+                new ParameterTable(
+                    "Калибровка",
+                    new[] { "Name", "Value", "Unit", "Comment" },
+                    new[]
+                    {
+                        (IReadOnlyList<string>)new[] { "DepthShift", "0.15", "m", "Manual correction" },
+                        (IReadOnlyList<string>)new[] { "GammaScale", "1.02", "ratio", "From lab report" },
+                    }),
             };
 
             var window = new ImportDialog(curves, parameterTables);

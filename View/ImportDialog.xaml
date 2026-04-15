@@ -116,9 +116,10 @@
 
                     <DataGrid Grid.Row="1"
                               ItemsSource="{Binding SelectedParameterTable.Rows}"
-                              AutoGenerateColumns="False"
-                              CanUserAddRows="True"
-                              CanUserDeleteRows="True"
+                              AutoGenerateColumns="True"
+                              IsReadOnly="True"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
                               HeadersVisibility="Column"/>
                     
                 </Grid>
