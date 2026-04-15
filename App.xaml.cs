@@ -21,11 +21,14 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import
 
             var parameterTables = new List<ParameterTable>
             {
-                new ParameterTable("Основная таблица", new[]
-                {
-                    new ParameterItem("Step", "0.1"),
-                    new ParameterItem("NullValue", "-999.25"),
-                }),
+                new ParameterTable(
+                    "Основная таблица",
+                    new[] { "Параметр", "Значение" },
+                    new[]
+                    {
+                        (IReadOnlyList<string>)new[] { "Step", "0.1" },
+                        (IReadOnlyList<string>)new[] { "NullValue", "-999.25" },
+                    }),
                 new ParameterTable(
                     "Калибровка",
                     new[] { "Name", "Value", "Unit", "Comment" },

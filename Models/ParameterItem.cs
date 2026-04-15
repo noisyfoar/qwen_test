@@ -2,52 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel;
-
 namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
 {
-    public sealed class ParameterItem : ViewModelBase
-    {
-        private string _name;
-        private string _value;
-
-        public ParameterItem(string name, string value)
-        {
-            _name = name;
-            _value = value;
-        }
-
-        public string Name
-        {
-            get => _name;
-            set
-            {
-                if (_name == value)
-                {
-                    return;
-                }
-
-                _name = value;
-                CallPropertyChanged(nameof(Name));
-            }
-        }
-
-        public string Value
-        {
-            get => _value;
-            set
-            {
-                if (_value == value)
-                {
-                    return;
-                }
-
-                _value = value;
-                CallPropertyChanged(nameof(Value));
-            }
-        }
-    }
-
     public sealed class ParameterRow
     {
         public ParameterRow(IReadOnlyList<string> values)
@@ -60,19 +16,6 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
 
     public sealed class ParameterTable
     {
-        public ParameterTable(string name, IEnumerable<ParameterItem> rows = null)
-            : this(
-                name,
-                new[] { "Name", "Value" },
-                (rows ?? Enumerable.Empty<ParameterItem>())
-                    .Select(item => (IReadOnlyList<string>)new[]
-                    {
-                        item?.Name ?? string.Empty,
-                        item?.Value ?? string.Empty,
-                    }))
-        {
-        }
-
         public ParameterTable(string name, IEnumerable<string> columns, IEnumerable<IReadOnlyList<string>> rows = null)
         {
             Name = string.IsNullOrWhiteSpace(name) ? "Table" : name;
