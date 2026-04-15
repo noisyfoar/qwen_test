@@ -72,11 +72,13 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
             get { return Source.Units ?? string.Empty; }
         }
 
+        public bool HasBeginDelta => Is2D();
+
         public double? Begin
         {
             set 
             {
-                if(value != null)
+                if(value != null && Is2D())
                 {
                     Source.SetBegin((double)value);
                     CallPropertyChanged(nameof(Begin));
@@ -93,7 +95,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
         {
             set
             {
-                if (value != null)
+                if (value != null && Is2D())
                 {
                     Source.SetDelta((double)value);
                     CallPropertyChanged(nameof(Delta));

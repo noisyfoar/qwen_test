@@ -212,8 +212,8 @@
                             <DataGridTextColumn Header="Исх. имя" Binding="{Binding SourceName}" IsReadOnly="True" Width="3*"/>
                             <DataGridTextColumn Header="Имп. имя" Binding="{Binding ExportName}" Width="4*"/>
                             <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="4*"/>
-                            <DataGridTextColumn Header="Начала" Binding="{Binding Begin}" Width="*" />
-                            <DataGridTextColumn Header="Период дискретизации" Binding="{Binding Delta}" Width="*"/>
+                            <DataGridTextColumn Header="Начала" Binding="{Binding Begin}" Width="*" IsReadOnly="{Binding Is1D}"/>
+                            <DataGridTextColumn Header="Период дискретизации" Binding="{Binding Delta}" Width="*" IsReadOnly="{Binding Is1D}"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>
