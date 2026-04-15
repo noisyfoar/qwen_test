@@ -107,7 +107,7 @@
 
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
                         <TextBlock Text="Таблица:" VerticalAlignment="Center"/>
-                        <ComboBox Width="220"
+                        <ComboBox Width="160"
                                   Margin="6,0,0,0"
                                   ItemsSource="{Binding ParameterTables}"
                                   DisplayMemberPath="Name"
@@ -129,9 +129,9 @@
 
             <Grid Grid.Column="1">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="3*"/>
                 </Grid.ColumnDefinitions>
 
                 <GroupBox Header="Доступные кривые" Grid.Column="0">
@@ -212,8 +212,8 @@
                             <DataGridTextColumn Header="Исх. имя" Binding="{Binding SourceName}" IsReadOnly="True" Width="3*"/>
                             <DataGridTextColumn Header="Имп. имя" Binding="{Binding ExportName}" Width="4*"/>
                             <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="4*"/>
-                            <DataGridTextColumn Header="Начала" Binding="{Binding Begin}" Width="*" IsReadOnly="{Binding Is1D}"/>
-                            <DataGridTextColumn Header="Период дискретизации" Binding="{Binding Delta}" Width="*" IsReadOnly="{Binding Is1D}"/>
+                            <DataGridTextColumn Header="Начало отсчета" Binding="{Binding Begin}" Width="120" IsReadOnly="{Binding Is1D}"/>
+                            <DataGridTextColumn Header="Период дискретизации" Binding="{Binding Delta}" Width="170" IsReadOnly="{Binding Is1D}"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>
