@@ -20,14 +20,14 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.View
                 parameterTables ?? Enumerable.Empty<ParameterTable>());
             _viewModel.RequestClose += (_, __) => CloseWindowWithDialogResult(true);
             _viewModel.RequestCancel += (_, __) => CloseWindowWithDialogResult(false);
+            var selector = FindName("ParameterTableSelector") as ComboBox;
+            if (selector != null)
+            {
+                selector.SelectionChanged += (_, __) => BuildParameterColumns(_viewModel.SelectedParameterTable);
+            }
             BuildParameterColumns(_viewModel.SelectedParameterTable);
         }
         private ImportDialogViewModel _viewModel { get { return DataContext as ImportDialogViewModel; } }
-
-        private void ParameterTableSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            BuildParameterColumns(_viewModel.SelectedParameterTable);
-        }
 
         private void BuildParameterColumns(ParameterTable table)
         {

@@ -107,11 +107,11 @@
 
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
                         <TextBlock Text="Таблица:" VerticalAlignment="Center"/>
-                        <ComboBox Width="220"
+                        <ComboBox x:Name="ParameterTableSelector"
+                                  Width="220"
                                   Margin="6,0,0,0"
                                   ItemsSource="{Binding ParameterTables}"
                                   DisplayMemberPath="Name"
-                                  SelectionChanged="ParameterTableSelector_SelectionChanged"
                                   SelectedItem="{Binding SelectedParameterTable}"/>
                     </StackPanel>
 
