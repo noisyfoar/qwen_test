@@ -12,7 +12,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
     public sealed class ImportDialogViewModel : ViewModelBase
     {
-        private readonly ObservableCollection<LISCurveItem> _availableCurves;
+        private readonly ObservableCollection<LISCurveItem> _allCurves;
         private readonly ObservableCollection<LISCurveItem> _selectedCurves;
         private readonly ObservableCollection<ParameterTable> _parameterTables;
         private readonly ICollectionView _availableCurvesView;
@@ -105,12 +105,12 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
         public ImportDialogViewModel(IEnumerable<LISCurveItem> curves, IEnumerable<ParameterTable> parameterTables)
         {
-            _availableCurves = new ObservableCollection<LISCurveItem>(curves ?? Enumerable.Empty<LISCurveItem>());
+            _allCurves = new ObservableCollection<LISCurveItem>(curves ?? Enumerable.Empty<LISCurveItem>());
             _selectedCurves = new ObservableCollection<LISCurveItem>();
             _parameterTables = new ObservableCollection<ParameterTable>(parameterTables ?? Enumerable.Empty<ParameterTable>());
             _selectedParameterTable = _parameterTables.FirstOrDefault();
 
-            _availableCurvesView = CollectionViewSource.GetDefaultView(_availableCurves);
+            _availableCurvesView = CollectionViewSource.GetDefaultView(_allCurves);
             _availableCurvesView.Filter = FilterCurve;
 
             Templates = new ObservableCollection<NamedItem>
@@ -129,7 +129,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
             MoveSelectedRightCommand = new RelayCommand(MoveSelectedToRight, CanMoveSelectedToRight);
             MoveSelectedLeftCommand = new RelayCommand(MoveSelectedToLeft, CanMoveSelectedToLeft);
-            MoveAllRightCommand = new RelayCommand(_ => MoveAllToRight(), _ => _availableCurves.Count > 0);
+            MoveAllRightCommand = new RelayCommand(_ => MoveAllToRight(), _ => _allCurves.Any(curve => curve.IsEnabled));
             MoveAllLeftCommand = new RelayCommand(_ => MoveAllToLeft(), _ => _selectedCurves.Count > 0);
 
 
@@ -149,6 +149,11 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         private bool FilterCurve(object obj)
         {
             if (!(obj is LISCurveItem curve))
+            {
+                return false;
+            }
+
+            if (!curve.IsEnabled)
             {
                 return false;
             }
@@ -177,13 +182,10 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
             foreach (var curve in selectedItems.ToList())
             {
-                if (!_availableCurves.Remove(curve))
-                {
-                    continue;
-                }
-
-                _selectedCurves.Add(new LISCurveItem(curve.Source));
+                AddCurve(curve);
             }
+
+            _availableCurvesView.Refresh();
         }
         private bool CanMoveSelectedToLeft(object parameter)
         {
@@ -200,23 +202,21 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
             foreach (var selected in selectedItems.ToList())
             {
-                if (!_selectedCurves.Remove(selected))
-                {
-                    continue;
-                }
-
-                _availableCurves.Add(selected);
+                RemoveCurve(selected);
             }
+
+            _availableCurvesView.Refresh();
         }
 
         private void MoveAllToRight()
         {
-            var items = _availableCurves.ToList();
+            var items = _allCurves.Where(curve => curve.IsEnabled).ToList();
             foreach (var curve in items)
             {
-                _availableCurves.Remove(curve);
-                _selectedCurves.Add(new LISCurveItem(curve.Source));
+                AddCurve(curve);
             }
+
+            _availableCurvesView.Refresh();
         }
 
         private void MoveAllToLeft()
@@ -224,9 +224,35 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             var items = _selectedCurves.ToList();
             foreach (var selected in items)
             {
-                _selectedCurves.Remove(selected);
-                _availableCurves.Add(selected);
+                RemoveCurve(selected);
             }
+
+            _availableCurvesView.Refresh();
+        }
+
+        private void AddCurve(LISCurveItem item)
+        {
+            if (item == null || !item.IsEnabled)
+            {
+                return;
+            }
+
+            item.IsEnabled = false;
+            if (!_selectedCurves.Contains(item))
+            {
+                _selectedCurves.Add(item);
+            }
+        }
+
+        private void RemoveCurve(LISCurveItem item)
+        {
+            if (item == null)
+            {
+                return;
+            }
+
+            item.IsEnabled = true;
+            _selectedCurves.Remove(item);
         }
 
         private static List<LISCurveItem> GetSelectedItems(object parameter)

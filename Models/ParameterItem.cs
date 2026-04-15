@@ -9,8 +9,10 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
         {
             Name = name;
 
-            Columns = columns.ToList();
-            Rows = rows.Select(r=>r.ToList()).ToList();
+            Columns = (columns ?? Enumerable.Empty<string>()).ToList();
+            Rows = (rows ?? Enumerable.Empty<IReadOnlyList<string>>())
+                .Select(r => (IReadOnlyList<string>)r.ToList())
+                .ToList();
         }
 
         public string Name { get; }
