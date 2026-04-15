@@ -21,6 +21,8 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         private ParameterTable _selectedParameterTable;
         private NamedItem _selectedTemplate;
         private NamedItem _currentMnemonicsSet;
+        private double _start;
+        private double _stop;
 
         public ICollectionView AvailableCurvesView => _availableCurvesView;
 
@@ -91,6 +93,36 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             }
         }
 
+        public double Start
+        {
+            get => _start;
+            set
+            {
+                if (Math.Abs(_start - value) < double.Epsilon)
+                {
+                    return;
+                }
+
+                _start = value;
+                CallPropertyChanged(nameof(Start));
+            }
+        }
+
+        public double Stop
+        {
+            get => _stop;
+            set
+            {
+                if (Math.Abs(_stop - value) < double.Epsilon)
+                {
+                    return;
+                }
+
+                _stop = value;
+                CallPropertyChanged(nameof(Stop));
+            }
+        }
+
         public RelayCommand MoveSelectedRightCommand { get; }
         public RelayCommand MoveSelectedLeftCommand { get; }
         public RelayCommand MoveAllRightCommand { get; }
@@ -99,6 +131,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         public RelayCommand CancelCommand { get; }
         public RelayCommand SaveTemplateCommand { get; }
         public RelayCommand SaveAsTemplateCommand { get; }
+        public RelayCommand UseFullRangeCommand { get; }
 
         public event EventHandler RequestClose;
         public event EventHandler RequestCancel;
@@ -138,6 +171,9 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
             SaveTemplateCommand = new RelayCommand(_ => { });
             SaveAsTemplateCommand = new RelayCommand(_ => { });
+            UseFullRangeCommand = new RelayCommand(_ => ApplyFullRange());
+
+            ApplyFullRange();
         }
 
         public string SearchText
@@ -253,6 +289,28 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
             item.IsEnabled = true;
             _selectedCurves.Remove(item);
+        }
+
+        private void ApplyFullRange()
+        {
+            var ranges = _allCurves
+                .Where(curve => curve.HasBeginDelta && curve.Delta.HasValue)
+                .Select(curve => new
+                {
+                    Start = curve.Begin.Value,
+                    Stop = curve.Begin.Value + curve.Delta.Value * Math.Max(curve.Source.DataMatrix.Rows - 1, 0)
+                })
+                .ToList();
+
+            if (ranges.Count == 0)
+            {
+                Start = 0;
+                Stop = 0;
+                return;
+            }
+
+            Start = ranges.Min(range => range.Start);
+            Stop = ranges.Max(range => range.Stop);
         }
 
         private static List<LISCurveItem> GetSelectedItems(object parameter)
