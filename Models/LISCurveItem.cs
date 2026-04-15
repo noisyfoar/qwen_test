@@ -11,10 +11,26 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
         public Curve Source { get; }
 
         private readonly string _sourceName;
+        private bool _isEnabled = true;
 
         public string SourceName
         {
             get { return _sourceName; }
+        }
+
+        public bool IsEnabled
+        {
+            get => _isEnabled;
+            set
+            {
+                if (_isEnabled == value)
+                {
+                    return;
+                }
+
+                _isEnabled = value;
+                CallPropertyChanged(nameof(IsEnabled));
+            }
         }
 
         public string ExportName
