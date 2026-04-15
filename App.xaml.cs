@@ -26,16 +26,16 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import
                     new[] { "Параметр", "Значение" },
                     new[]
                     {
-                        (IReadOnlyList<string>)new[] { "Step", "0.1" },
-                        (IReadOnlyList<string>)new[] { "NullValue", "-999.25" },
+                        new ParameterRow(new[] { "Step", "0.1" }),
+                        new ParameterRow(new[] { "NullValue", "-999.25" }),
                     }),
                 new ParameterTable(
                     "Калибровка",
                     new[] { "Name", "Value", "Unit", "Comment" },
                     new[]
                     {
-                        (IReadOnlyList<string>)new[] { "DepthShift", "0.15", "m", "Manual correction" },
-                        (IReadOnlyList<string>)new[] { "GammaScale", "1.02", "ratio", "From lab report" },
+                        new ParameterRow(new[] { "DepthShift", "0.15", "m", "Manual correction" }),
+                        new ParameterRow(new[] { "GammaScale", "1.02", "ratio", "From lab report" }),
                     }),
             };
 

@@ -121,7 +121,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 _parameterTables.Add(new ParameterTable(
                     "Таблица 1",
                     new[] { "Параметр", "Значение" },
-                    Array.Empty<IReadOnlyList<string>>()));
+                    new List<ParameterRow>()));
             }
 
             _selectedParameterTable = _parameterTables.FirstOrDefault();

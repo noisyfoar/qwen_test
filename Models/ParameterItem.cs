@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
 {
     public sealed class ParameterRow
@@ -16,20 +15,11 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
 
     public sealed class ParameterTable
     {
-        public ParameterTable(string name, IEnumerable<string> columns, IEnumerable<IReadOnlyList<string>> rows = null)
+        public ParameterTable(string name, IReadOnlyList<string> columns, IReadOnlyList<ParameterRow> rows)
         {
-            Name = string.IsNullOrWhiteSpace(name) ? "Table" : name;
-            Columns = new ReadOnlyCollection<string>(
-                (columns ?? Enumerable.Empty<string>())
-                    .Select((columnName, index) => string.IsNullOrWhiteSpace(columnName) ? $"Column{index + 1}" : columnName.Trim())
-                    .DefaultIfEmpty("Value")
-                    .Distinct(StringComparer.Ordinal)
-                    .ToList());
-
-            Rows = new ReadOnlyCollection<ParameterRow>(
-                (rows ?? Enumerable.Empty<IReadOnlyList<string>>())
-                    .Select(row => new ParameterRow(row))
-                    .ToList());
+            Name = name ?? string.Empty;
+            Columns = columns ?? Array.Empty<string>();
+            Rows = rows ?? Array.Empty<ParameterRow>();
         }
 
         public string Name { get; }
