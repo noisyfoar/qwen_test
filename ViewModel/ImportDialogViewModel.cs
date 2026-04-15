@@ -5,12 +5,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows.Data;
+using System.Windows.Input;
 
 namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 {
 
-    public sealed class ImportDialogViewModel : ViewModelBase
+    public sealed class ImportDialogViewModel : INotifyPropertyChanged
     {
         private readonly ObservableCollection<LISCurveItem> _allCurves;
         private readonly ObservableCollection<LISCurveItem> _selectedCurves;
@@ -21,8 +23,6 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         private ParameterTable _selectedParameterTable;
         private NamedItem _selectedTemplate;
         private NamedItem _currentMnemonicsSet;
-        private double _start;
-        private double _stop;
 
         public ICollectionView AvailableCurvesView => _availableCurvesView;
 
@@ -31,6 +31,8 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         public ObservableCollection<ParameterTable> ParameterTables => _parameterTables;
         public ObservableCollection<NamedItem> Templates { get; }
         public ObservableCollection<NamedItem> MnemonicsSets { get; }
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public ParameterTable SelectedParameterTable
         {
@@ -43,7 +45,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 }
 
                 _selectedParameterTable = value;
-                CallPropertyChanged(nameof(SelectedParameterTable));
+                OnPropertyChanged();
             }
         }
 
@@ -58,7 +60,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 }
 
                 _selectedTemplate = value;
-                CallPropertyChanged(nameof(SelectedTemplate));
+                OnPropertyChanged();
             }
         }
 
@@ -73,7 +75,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 }
 
                 _currentMnemonicsSet = value;
-                CallPropertyChanged(nameof(CurrentMnemonicsSet));
+                OnPropertyChanged();
             }
         }
 
@@ -88,50 +90,19 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 }
 
                 _curveFilter = value;
-                CallPropertyChanged(nameof(CurveFilter));
+                OnPropertyChanged();
                 _availableCurvesView.Refresh();
             }
         }
 
-        public double Start
-        {
-            get => _start;
-            set
-            {
-                if (Math.Abs(_start - value) < double.Epsilon)
-                {
-                    return;
-                }
-
-                _start = value;
-                CallPropertyChanged(nameof(Start));
-            }
-        }
-
-        public double Stop
-        {
-            get => _stop;
-            set
-            {
-                if (Math.Abs(_stop - value) < double.Epsilon)
-                {
-                    return;
-                }
-
-                _stop = value;
-                CallPropertyChanged(nameof(Stop));
-            }
-        }
-
-        public RelayCommand MoveSelectedRightCommand { get; }
-        public RelayCommand MoveSelectedLeftCommand { get; }
-        public RelayCommand MoveAllRightCommand { get; }
-        public RelayCommand MoveAllLeftCommand { get; }
-        public RelayCommand DoneCommand { get; }
-        public RelayCommand CancelCommand { get; }
-        public RelayCommand SaveTemplateCommand { get; }
-        public RelayCommand SaveAsTemplateCommand { get; }
-        public RelayCommand UseFullRangeCommand { get; }
+        public ICommand MoveSelectedRightCommand { get; }
+        public ICommand MoveSelectedLeftCommand { get; }
+        public ICommand MoveAllRightCommand { get; }
+        public ICommand MoveAllLeftCommand { get; }
+        public ICommand DoneCommand { get; }
+        public ICommand CancelCommand { get; }
+        public ICommand SaveTemplateCommand { get; }
+        public ICommand SaveAsTemplateCommand { get; }
 
         public event EventHandler RequestClose;
         public event EventHandler RequestCancel;
@@ -160,20 +131,16 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             SelectedTemplate = Templates.FirstOrDefault();
             CurrentMnemonicsSet = MnemonicsSets.FirstOrDefault();
 
-            MoveSelectedRightCommand = new RelayCommand(MoveSelectedToRight, CanMoveSelectedToRight);
-            MoveSelectedLeftCommand = new RelayCommand(MoveSelectedToLeft, CanMoveSelectedToLeft);
-            MoveAllRightCommand = new RelayCommand(_ => MoveAllToRight(), _ => _allCurves.Any(curve => curve.IsEnabled));
-            MoveAllLeftCommand = new RelayCommand(_ => MoveAllToLeft(), _ => _selectedCurves.Count > 0);
+            MoveSelectedRightCommand = new DelegateCommand(MoveSelectedToRight, CanMoveSelectedToRight);
+            MoveSelectedLeftCommand = new DelegateCommand(MoveSelectedToLeft, CanMoveSelectedToLeft);
+            MoveAllRightCommand = new DelegateCommand(_ => MoveAllToRight(), _ => _allCurves.Any(curve => curve.IsEnabled));
+            MoveAllLeftCommand = new DelegateCommand(_ => MoveAllToLeft(), _ => _selectedCurves.Count > 0);
 
+            DoneCommand = new DelegateCommand(_ => RequestClose?.Invoke(this, EventArgs.Empty), _ => _selectedCurves.Count > 0);
+            CancelCommand = new DelegateCommand(_ => RequestCancel?.Invoke(this, EventArgs.Empty));
 
-            DoneCommand = new RelayCommand(_ => RequestClose?.Invoke(this, EventArgs.Empty), _ => _selectedCurves.Count > 0);
-            CancelCommand = new RelayCommand(_ => RequestCancel?.Invoke(this, EventArgs.Empty));
-
-            SaveTemplateCommand = new RelayCommand(_ => { });
-            SaveAsTemplateCommand = new RelayCommand(_ => { });
-            UseFullRangeCommand = new RelayCommand(_ => ApplyFullRange());
-
-            ApplyFullRange();
+            SaveTemplateCommand = new DelegateCommand(_ => { });
+            SaveAsTemplateCommand = new DelegateCommand(_ => { });
         }
 
         public string SearchText
@@ -222,6 +189,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             }
 
             _availableCurvesView.Refresh();
+            RaiseCommandStates();
         }
         private bool CanMoveSelectedToLeft(object parameter)
         {
@@ -242,6 +210,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             }
 
             _availableCurvesView.Refresh();
+            RaiseCommandStates();
         }
 
         private void MoveAllToRight()
@@ -253,6 +222,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             }
 
             _availableCurvesView.Refresh();
+            RaiseCommandStates();
         }
 
         private void MoveAllToLeft()
@@ -264,6 +234,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             }
 
             _availableCurvesView.Refresh();
+            RaiseCommandStates();
         }
 
         private void AddCurve(LISCurveItem item)
@@ -278,6 +249,8 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             {
                 _selectedCurves.Add(item);
             }
+
+            RaiseCommandStates();
         }
 
         private void RemoveCurve(LISCurveItem item)
@@ -289,28 +262,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
             item.IsEnabled = true;
             _selectedCurves.Remove(item);
-        }
-
-        private void ApplyFullRange()
-        {
-            var ranges = _allCurves
-                .Where(curve => curve.HasBeginDelta && curve.Delta.HasValue)
-                .Select(curve => new
-                {
-                    Start = curve.Begin.Value,
-                    Stop = curve.Begin.Value + curve.Delta.Value * Math.Max(curve.Source.DataMatrix.Rows - 1, 0)
-                })
-                .ToList();
-
-            if (ranges.Count == 0)
-            {
-                Start = 0;
-                Stop = 0;
-                return;
-            }
-
-            Start = ranges.Min(range => range.Start);
-            Stop = ranges.Max(range => range.Stop);
+            RaiseCommandStates();
         }
 
         private static List<LISCurveItem> GetSelectedItems(object parameter)
@@ -343,6 +295,44 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             }
 
             public string Name { get; }
+        }
+
+        private void RaiseCommandStates()
+        {
+            CommandManager.InvalidateRequerySuggested();
+        }
+
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private sealed class DelegateCommand : ICommand
+        {
+            private readonly Action<object> _execute;
+            private readonly Func<object, bool> _canExecute;
+
+            public DelegateCommand(Action<object> execute, Func<object, bool> canExecute = null)
+            {
+                _execute = execute ?? throw new ArgumentNullException(nameof(execute));
+                _canExecute = canExecute;
+            }
+
+            public bool CanExecute(object parameter)
+            {
+                return _canExecute == null || _canExecute(parameter);
+            }
+
+            public void Execute(object parameter)
+            {
+                _execute(parameter);
+            }
+
+            public event EventHandler CanExecuteChanged
+            {
+                add => CommandManager.RequerySuggested += value;
+                remove => CommandManager.RequerySuggested -= value;
+            }
         }
     }
 }

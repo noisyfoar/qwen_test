@@ -1,16 +1,21 @@
 using NPFGEO.Data;
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 
 namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
 {
 
-    public sealed class LISCurveItem : ViewModelBase
+    public sealed class LISCurveItem : INotifyPropertyChanged
     {
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public Curve Source { get; }
 
         private readonly string _sourceName;
         private bool _isEnabled = true;
+        private int _precision = 2;
 
         public string SourceName
         {
@@ -28,7 +33,22 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
                 }
 
                 _isEnabled = value;
-                CallPropertyChanged(nameof(IsEnabled));
+                OnPropertyChanged();
+            }
+        }
+
+        public int Precision
+        {
+            get => _precision;
+            set
+            {
+                if (_precision == value)
+                {
+                    return;
+                }
+
+                _precision = value;
+                OnPropertyChanged();
             }
         }
 
@@ -38,9 +58,9 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
             set
             {
                 Source.Caption = value ?? string.Empty;
-                CallPropertyChanged(nameof(ExportName));
-                CallPropertyChanged(nameof(NewName));
-                CallPropertyChanged(nameof(Name));
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(NewName));
+                OnPropertyChanged(nameof(Name));
             }
         }
 
@@ -57,7 +77,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
             set 
             { 
                 Source.Description = value ?? string.Empty;
-                CallPropertyChanged(nameof(Description));
+                OnPropertyChanged();
             }
             get { return Source.Description ?? string.Empty; }
         }
@@ -67,12 +87,13 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
             set 
             { 
                 Source.Units = value ?? string.Empty;
-                CallPropertyChanged(nameof(Units));
+                OnPropertyChanged();
             }
             get { return Source.Units ?? string.Empty; }
         }
 
         public bool HasBeginDelta => Is2D();
+        public bool Is1D => !Is2D();
 
         public double? Begin
         {
@@ -81,7 +102,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
                 if(value != null && Is2D())
                 {
                     Source.SetBegin((double)value);
-                    CallPropertyChanged(nameof(Begin));
+                    OnPropertyChanged();
                 }
             }
             get 
@@ -98,7 +119,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
                 if (value != null && Is2D())
                 {
                     Source.SetDelta((double)value);
-                    CallPropertyChanged(nameof(Delta));
+                    OnPropertyChanged();
                 }
             }
             get
@@ -115,6 +136,11 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
         {
             Source = source ?? throw new ArgumentNullException(nameof(source));
             _sourceName = source.Caption ?? string.Empty;
+        }
+
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
     }
