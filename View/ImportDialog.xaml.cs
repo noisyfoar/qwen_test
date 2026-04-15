@@ -42,7 +42,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.View
                 ParametersGrid.Columns.Add(new DataGridTextColumn
                 {
                     Header = table.Columns[index],
-                    Binding = new Binding($"Values[{index}]"),
+                    Binding = new Binding($"[{index}]"),
                     IsReadOnly = true,
                 });
             }
