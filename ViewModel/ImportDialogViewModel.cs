@@ -24,6 +24,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
             "Genesis",
             "Export templates");
+        private const string NoTemplateName = "Без шаблона";
 
         private string _curveFilter = string.Empty;
         private ParameterTable _selectedParameterTable;
@@ -298,7 +299,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
         private void ApplyTemplate()
         {
-            if (_selectedTemplate != null)
+            if (_selectedTemplate != null && !IsNoTemplate(_selectedTemplate))
             {
                 ApplyTemplate(_selectedTemplate);
             }
@@ -355,12 +356,12 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
         private bool CanSaveTemplate()
         {
-            return SelectedTemplate != null;
+            return SelectedTemplate != null && !IsNoTemplate(SelectedTemplate);
         }
 
         private void SaveTemplate()
         {
-            if (SelectedTemplate == null)
+            if (SelectedTemplate == null || IsNoTemplate(SelectedTemplate))
             {
                 return;
             }
@@ -441,6 +442,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         private void RefreshTemplates()
         {
             Templates.Clear();
+            Templates.Add(CreateNoTemplateOption());
             EnsureTemplatesDirectoryExists();
 
             var reader = new ExportTemplateReaderWriter();
@@ -464,6 +466,21 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             {
                 Directory.CreateDirectory(TemplatesDirectoryPath);
             }
+        }
+
+        private static ExportTemplate CreateNoTemplateOption()
+        {
+            return new ExportTemplate
+            {
+                Name = NoTemplateName,
+            };
+        }
+
+        private static bool IsNoTemplate(ExportTemplate template)
+        {
+            return template != null
+                   && string.IsNullOrWhiteSpace(template.FileName)
+                   && string.Equals(template.Name, NoTemplateName, StringComparison.Ordinal);
         }
 
 
