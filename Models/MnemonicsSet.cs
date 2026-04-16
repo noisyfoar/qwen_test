@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.Serialization;
-using System.Text;
 using System.Xml;
 
 namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
@@ -57,25 +56,5 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
             return set;
         }
 
-        public void Write(string fileName, MnemonicsSet set)
-        {
-            using (var fs = File.Create(fileName))
-            {
-                DataContractSerializerSettings settings = new DataContractSerializerSettings();
-                settings.PreserveObjectReferences = false;
-                settings.MaxItemsInObjectGraph = int.MaxValue;
-                DataContractSerializer dataContractSerializer = new DataContractSerializer(typeof(MnemonicsSet), settings);
-
-                XmlWriterSettings xmlWriterSettings = new XmlWriterSettings();
-                xmlWriterSettings.Indent = true;
-                xmlWriterSettings.CheckCharacters = false;
-                xmlWriterSettings.NewLineHandling = NewLineHandling.Entitize;
-                xmlWriterSettings.Encoding = Encoding.Unicode;
-
-                XmlWriter xmlWriter = XmlWriter.Create(fs, xmlWriterSettings);
-                dataContractSerializer.WriteObject(xmlWriter, set);
-                xmlWriter.Flush();
-            }
-        }
     }
 }

@@ -27,6 +27,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             "Genesis",
             "Mnemonics sets");
         private const string NoTemplateName = "Без шаблона";
+        private const string NoMnemonicsSetName = "Без библиотеки";
 
         private string _curveFilter = string.Empty;
         private double? _start;
@@ -425,8 +426,6 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 }
 
                 AddCurve(source);
-                source.ExportName = item.ExportName ?? string.Empty;
-                source.Description = item.Description ?? string.Empty;
             }
 
             _availableCurvesView.Refresh();
@@ -456,7 +455,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
         private void ApplyMnemonicsSet()
         {
-            if (_currentMnemonicsSet != null)
+            if (_currentMnemonicsSet != null && !IsNoMnemonicsSet(_currentMnemonicsSet))
             {
                 ApplyMnemonicsSet(_currentMnemonicsSet);
             }
@@ -464,7 +463,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
         private void ApplyMnemonicsSet(MnemonicsSet set)
         {
-            if (set == null)
+            if (set == null || IsNoMnemonicsSet(set))
             {
                 return;
             }
@@ -623,6 +622,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         private void RefreshMnemonicsSets()
         {
             MnemonicsSets.Clear();
+            MnemonicsSets.Add(CreateNoMnemonicsSetOption());
             EnsureMnemonicsDirectoryExists();
 
             var reader = new MnemonicsSetReaderWriter();
@@ -646,6 +646,21 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             {
                 Directory.CreateDirectory(MnemonicsDirectoryPath);
             }
+        }
+
+        private static MnemonicsSet CreateNoMnemonicsSetOption()
+        {
+            return new MnemonicsSet
+            {
+                Name = NoMnemonicsSetName,
+            };
+        }
+
+        private static bool IsNoMnemonicsSet(MnemonicsSet set)
+        {
+            return set != null
+                   && string.IsNullOrWhiteSpace(set.FileName)
+                   && string.Equals(set.Name, NoMnemonicsSetName, StringComparison.Ordinal);
         }
 
 
