@@ -69,7 +69,7 @@
 
             <TextBlock Text="Шаблон кривых" VerticalAlignment="Center"/>
             <ComboBox Width="{StaticResource elementWidth}" Margin="2, 0, 0, 0" Grid.Column="1" 
-                      SelectedValue="{Binding Path=SelectedTemplate, Mode=TwoWay}" 
+                      SelectedItem="{Binding Path=SelectedTemplate, Mode=TwoWay}" 
                       ItemsSource="{Binding Path=Templates}" DisplayMemberPath="Name"/>
 
             <Button Content="Сохранить" Margin="8, 0, 8, 0" Padding="5, 0, 5, 0" Width="100" Grid.Column="2" Command="{Binding Path=SaveTemplateCommand, Mode=OneWay}"/>

@@ -308,7 +308,8 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             MoveAllToLeft();
             foreach (var item in template.Items ?? Enumerable.Empty<ExportTemplateItem>())
             {
-                var source = _allCurves.FirstOrDefault(curve => curve.SourceName == item.SourceName);
+                var source = _allCurves.FirstOrDefault(curve =>
+                    string.Equals(curve.SourceName?.Trim(), item.SourceName?.Trim(), StringComparison.OrdinalIgnoreCase));
                 if (source == null)
                 {
                     continue;
