@@ -399,6 +399,9 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             template.FileName = SelectedTemplate.FileName;
             template.Name = SelectedTemplate.Name;
             writer.Write(template.FileName, template);
+            // Re-read from disk to keep collection and selection in sync
+            // with the exact serialized payload.
+            template = writer.Read(template.FileName);
 
             var index = Templates.IndexOf(SelectedTemplate);
             if (index >= 0)

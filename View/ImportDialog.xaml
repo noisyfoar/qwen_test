@@ -220,10 +220,10 @@
                               SelectionMode="Extended">
                         <DataGrid.Columns>
                             <DataGridTextColumn Header="Исх. имя" Binding="{Binding SourceName}" IsReadOnly="True" Width="3*"/>
-                            <DataGridTextColumn Header="Имп. имя" Binding="{Binding ExportName}" Width="4*"/>
-                            <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="4*"/>
-                            <DataGridTextColumn Header="Начало отсчета" Binding="{Binding Begin}" Width="120"/>
-                            <DataGridTextColumn Header="Период дискретизации" Binding="{Binding Delta}" Width="170"/>
+                            <DataGridTextColumn Header="Имп. имя" Binding="{Binding ExportName, UpdateSourceTrigger=PropertyChanged}" Width="4*"/>
+                            <DataGridTextColumn Header="Описание" Binding="{Binding Description, UpdateSourceTrigger=PropertyChanged}" Width="4*"/>
+                            <DataGridTextColumn Header="Начало отсчета" Binding="{Binding Begin, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <DataGridTextColumn Header="Период дискретизации" Binding="{Binding Delta, UpdateSourceTrigger=PropertyChanged}" Width="170"/>
                         </DataGrid.Columns>
                     </DataGrid>
                 </GroupBox>
