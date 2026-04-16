@@ -85,19 +85,21 @@
         <Separator DockPanel.Dock="Top"/>
 
 
-        <Grid DockPanel.Dock="Bottom" Margin="8">
+        <Grid DockPanel.Dock="Bottom" Margin="8" HorizontalAlignment="Right">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             <Button Grid.Column="0"
                     Content="Отмена"
                     Margin="0,0,8,0"
-                    Padding="15,4"
+                    Padding="10,3"
+                    MinWidth="90"
                     Click="CancelButton_Click"/>
             <Button Grid.Column="1"
                     Content="Готово"
-                    Padding="15,4"
+                    Padding="10,3"
+                    MinWidth="90"
                     IsDefault="True"
                     Click="DoneButton_Click"/>
         </Grid>
