@@ -1,55 +1,31 @@
 using NPFGEO.Data;
+using NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel;
 using System;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
 
 namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
 {
 
-    public sealed class LISCurveItem : INotifyPropertyChanged
+    public sealed class LISCurveItem : ViewModelBase
     {
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public Curve Source { get; }
-
-        private readonly string _sourceName;
         private bool _isEnabled = true;
-        private int _precision = 2;
-
-        public string SourceName
-        {
-            get { return _sourceName; }
-        }
 
         public bool IsEnabled
         {
             get => _isEnabled;
             set
             {
-                if (_isEnabled == value)
-                {
-                    return;
-                }
-
+                if (_isEnabled == value) return;
                 _isEnabled = value;
-                OnPropertyChanged();
+                CallPropertyChanged(nameof(IsEnabled));
             }
         }
 
-        public int Precision
-        {
-            get => _precision;
-            set
-            {
-                if (_precision == value)
-                {
-                    return;
-                }
+        private readonly string _sourceName;
 
-                _precision = value;
-                OnPropertyChanged();
-            }
+        public string SourceName
+        {
+            get { return _sourceName; }
         }
 
         public string ExportName
@@ -58,9 +34,9 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
             set
             {
                 Source.Caption = value ?? string.Empty;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(NewName));
-                OnPropertyChanged(nameof(Name));
+                CallPropertyChanged(nameof(ExportName));
+                CallPropertyChanged(nameof(NewName));
+                CallPropertyChanged(nameof(Name));
             }
         }
 
@@ -77,7 +53,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
             set 
             { 
                 Source.Description = value ?? string.Empty;
-                OnPropertyChanged();
+                CallPropertyChanged(nameof(Description));
             }
             get { return Source.Description ?? string.Empty; }
         }
@@ -87,22 +63,19 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
             set 
             { 
                 Source.Units = value ?? string.Empty;
-                OnPropertyChanged();
+                CallPropertyChanged(nameof(Units));
             }
             get { return Source.Units ?? string.Empty; }
         }
-
-        public bool HasBeginDelta => Is2D();
-        public bool Is1D => !Is2D();
 
         public double? Begin
         {
             set 
             {
-                if(value != null && Is2D())
+                if(value != null)
                 {
                     Source.SetBegin((double)value);
-                    OnPropertyChanged();
+                    CallPropertyChanged(nameof(Begin));
                 }
             }
             get 
@@ -116,10 +89,10 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
         {
             set
             {
-                if (value != null && Is2D())
+                if (value != null)
                 {
                     Source.SetDelta((double)value);
-                    OnPropertyChanged();
+                    CallPropertyChanged(nameof(Delta));
                 }
             }
             get
@@ -136,11 +109,6 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
         {
             Source = source ?? throw new ArgumentNullException(nameof(source));
             _sourceName = source.Caption ?? string.Empty;
-        }
-
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
     }

@@ -18,9 +18,6 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
 
         [DataMember]
         public string Description { get; set; }
-
-        [DataMember]
-        public int Precision { get; set; }
     }
 
     [DataContract(Namespace = "")]

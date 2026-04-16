@@ -322,7 +322,6 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
                 AddCurve(source);
                 source.ExportName = item.ExportName ?? string.Empty;
-                source.Precision = item.Precision;
                 source.Description = item.Description ?? string.Empty;
             }
 
@@ -348,7 +347,6 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 SourceName = item.SourceName,
                 ExportName = item.ExportName,
                 Description = item.Description,
-                Precision = item.Precision,
             };
         }
 
