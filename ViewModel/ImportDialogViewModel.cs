@@ -22,12 +22,16 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
             "Genesis",
             "Export templates");
+        private static readonly string MnemonicsDirectoryPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+            "Genesis",
+            "Mnemonics sets");
         private const string NoTemplateName = "Без шаблона";
 
         private string _curveFilter = string.Empty;
         private ParameterTable _selectedParameterTable;
         private ExportTemplate _selectedTemplate;
-        private NamedItem _currentMnemonicsSet;
+        private MnemonicsSet _currentMnemonicsSet;
         private bool _suppressTemplateApply;
 
         public ICollectionView AvailableCurvesView => _availableCurvesView;
@@ -36,7 +40,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
         public ObservableCollection<ParameterTable> ParameterTables => _parameterTables;
         public ObservableCollection<ExportTemplate> Templates { get; }
-        public ObservableCollection<NamedItem> MnemonicsSets { get; }
+        public ObservableCollection<MnemonicsSet> MnemonicsSets { get; }
 
         public ParameterTable SelectedParameterTable
         {
@@ -73,7 +77,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             }
         }
 
-        public NamedItem CurrentMnemonicsSet
+        public MnemonicsSet CurrentMnemonicsSet
         {
             get => _currentMnemonicsSet;
             set
@@ -85,6 +89,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
                 _currentMnemonicsSet = value;
                 CallPropertyChanged(nameof(CurrentMnemonicsSet));
+                ApplyMnemonicsSet();
             }
         }
 
@@ -127,12 +132,9 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             _availableCurvesView.Filter = FilterCurve;
 
             Templates = new ObservableCollection<ExportTemplate>();
-            MnemonicsSets = new ObservableCollection<NamedItem>
-            {
-                new NamedItem("Набор 1"),
-                new NamedItem("Набор 2"),
-            };
+            MnemonicsSets = new ObservableCollection<MnemonicsSet>();
             RefreshTemplates();
+            RefreshMnemonicsSets();
             _suppressTemplateApply = true;
             SelectedTemplate = Templates.FirstOrDefault();
             _suppressTemplateApply = false;
@@ -350,6 +352,32 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             };
         }
 
+        private void ApplyMnemonicsSet()
+        {
+            if (_currentMnemonicsSet != null)
+            {
+                ApplyMnemonicsSet(_currentMnemonicsSet);
+            }
+        }
+
+        private void ApplyMnemonicsSet(MnemonicsSet set)
+        {
+            if (set == null)
+            {
+                return;
+            }
+
+            foreach (var curve in _allCurves)
+            {
+                var setItem = set.Items?.FirstOrDefault(item =>
+                    string.Equals(item.Source?.Trim(), curve.SourceName?.Trim(), StringComparison.OrdinalIgnoreCase));
+                if (setItem != null)
+                {
+                    curve.ExportName = setItem.Mnemonics ?? string.Empty;
+                }
+            }
+        }
+
         private bool CanSaveTemplate()
         {
             return SelectedTemplate != null && !IsNoTemplate(SelectedTemplate);
@@ -479,16 +507,34 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                    && string.Equals(template.Name, NoTemplateName, StringComparison.Ordinal);
         }
 
-
-        public sealed class NamedItem
+        private void RefreshMnemonicsSets()
         {
-            public NamedItem(string name)
-            {
-                Name = name ?? string.Empty;
-            }
+            MnemonicsSets.Clear();
+            EnsureMnemonicsDirectoryExists();
 
-            public string Name { get; }
+            var reader = new MnemonicsSetReaderWriter();
+            foreach (var file in Directory.GetFiles(MnemonicsDirectoryPath, "*.xml", SearchOption.AllDirectories))
+            {
+                try
+                {
+                    var set = reader.Read(file);
+                    MnemonicsSets.Add(set);
+                }
+                catch
+                {
+                    // Skip invalid mnemonics files so one malformed XML does not break the dialog.
+                }
+            }
         }
+
+        private static void EnsureMnemonicsDirectoryExists()
+        {
+            if (!Directory.Exists(MnemonicsDirectoryPath))
+            {
+                Directory.CreateDirectory(MnemonicsDirectoryPath);
+            }
+        }
+
 
         private void RaiseCommandStates()
         {
