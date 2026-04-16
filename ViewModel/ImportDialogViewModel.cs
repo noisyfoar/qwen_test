@@ -4,17 +4,15 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Windows.Data;
 using System.Windows.Input;
 
 namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 {
 
-    public sealed class ImportDialogViewModel : INotifyPropertyChanged
+    public sealed class ImportDialogViewModel : ViewModelBase
     {
         private readonly ObservableCollection<LISCurveItem> _allCurves;
         private readonly ObservableCollection<LISCurveItem> _selectedCurves;
@@ -40,8 +38,6 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         public ObservableCollection<ExportTemplate> Templates { get; }
         public ObservableCollection<NamedItem> MnemonicsSets { get; }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public ParameterTable SelectedParameterTable
         {
             get => _selectedParameterTable;
@@ -53,7 +49,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 }
 
                 _selectedParameterTable = value;
-                OnPropertyChanged();
+                CallPropertyChanged(nameof(SelectedParameterTable));
             }
         }
 
@@ -68,7 +64,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 }
 
                 _selectedTemplate = value;
-                OnPropertyChanged();
+                CallPropertyChanged(nameof(SelectedTemplate));
                 if (!_suppressTemplateApply)
                 {
                     ApplyTemplate();
@@ -88,7 +84,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 }
 
                 _currentMnemonicsSet = value;
-                OnPropertyChanged();
+                CallPropertyChanged(nameof(CurrentMnemonicsSet));
             }
         }
 
@@ -103,7 +99,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 }
 
                 _curveFilter = value;
-                OnPropertyChanged();
+                CallPropertyChanged(nameof(CurveFilter));
                 _availableCurvesView.Refresh();
             }
         }
@@ -142,16 +138,16 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             _suppressTemplateApply = false;
             CurrentMnemonicsSet = MnemonicsSets.FirstOrDefault();
 
-            MoveSelectedRightCommand = new DelegateCommand(MoveSelectedToRight, CanMoveSelectedToRight);
-            MoveSelectedLeftCommand = new DelegateCommand(MoveSelectedToLeft, CanMoveSelectedToLeft);
-            MoveAllRightCommand = new DelegateCommand(_ => MoveAllToRight(), _ => _allCurves.Any(curve => curve.IsEnabled));
-            MoveAllLeftCommand = new DelegateCommand(_ => MoveAllToLeft(), _ => _selectedCurves.Count > 0);
+            MoveSelectedRightCommand = new RelayCommand(MoveSelectedToRight, CanMoveSelectedToRight);
+            MoveSelectedLeftCommand = new RelayCommand(MoveSelectedToLeft, CanMoveSelectedToLeft);
+            MoveAllRightCommand = new RelayCommand(_ => MoveAllToRight(), _ => _allCurves.Any(curve => curve.IsEnabled));
+            MoveAllLeftCommand = new RelayCommand(_ => MoveAllToLeft(), _ => _selectedCurves.Count > 0);
 
-            DoneCommand = new DelegateCommand(_ => RequestClose?.Invoke(this, EventArgs.Empty), _ => _selectedCurves.Count > 0);
-            CancelCommand = new DelegateCommand(_ => RequestCancel?.Invoke(this, EventArgs.Empty));
+            DoneCommand = new RelayCommand(_ => RequestClose?.Invoke(this, EventArgs.Empty), _ => _selectedCurves.Count > 0);
+            CancelCommand = new RelayCommand(_ => RequestCancel?.Invoke(this, EventArgs.Empty));
 
-            SaveTemplateCommand = new DelegateCommand(_ => SaveTemplate(), _ => CanSaveTemplate());
-            SaveAsTemplateCommand = new DelegateCommand(_ => SaveTemplateAs(), _ => CanSaveTemplateAs());
+            SaveTemplateCommand = new RelayCommand(_ => SaveTemplate(), _ => CanSaveTemplate());
+            SaveAsTemplateCommand = new RelayCommand(_ => SaveTemplateAs(), _ => CanSaveTemplateAs());
         }
 
         public string SearchText
@@ -499,37 +495,5 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             CommandManager.InvalidateRequerySuggested();
         }
 
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        private sealed class DelegateCommand : ICommand
-        {
-            private readonly Action<object> _execute;
-            private readonly Func<object, bool> _canExecute;
-
-            public DelegateCommand(Action<object> execute, Func<object, bool> canExecute = null)
-            {
-                _execute = execute ?? throw new ArgumentNullException(nameof(execute));
-                _canExecute = canExecute;
-            }
-
-            public bool CanExecute(object parameter)
-            {
-                return _canExecute == null || _canExecute(parameter);
-            }
-
-            public void Execute(object parameter)
-            {
-                _execute(parameter);
-            }
-
-            public event EventHandler CanExecuteChanged
-            {
-                add => CommandManager.RequerySuggested += value;
-                remove => CommandManager.RequerySuggested -= value;
-            }
-        }
     }
 }
