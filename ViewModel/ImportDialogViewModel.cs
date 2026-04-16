@@ -365,13 +365,21 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 return;
             }
 
+            var map = (set.Items ?? Enumerable.Empty<MnemonicsSetItem>())
+                .Where(item => !string.IsNullOrWhiteSpace(item.Source))
+                .GroupBy(item => item.Source.Trim(), StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+
             foreach (var curve in _allCurves)
             {
-                var setItem = set.Items?.FirstOrDefault(item =>
-                    string.Equals(item.Source?.Trim(), curve.SourceName?.Trim(), StringComparison.OrdinalIgnoreCase));
-                if (setItem != null)
+                if (string.IsNullOrWhiteSpace(curve.SourceName))
                 {
-                    curve.ExportName = setItem.Mnemonics ?? string.Empty;
+                    continue;
+                }
+
+                if (map.TryGetValue(curve.SourceName.Trim(), out var setItem))
+                {
+                    curve.ExportName = setItem?.Mnemonics ?? string.Empty;
                 }
             }
         }
