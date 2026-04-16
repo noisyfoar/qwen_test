@@ -1,6 +1,7 @@
 using NPFGEO.Data;
 using NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel;
 using System;
+using System.Reflection;
 
 namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
 {
@@ -76,6 +77,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
                 {
                     Source.SetBegin((double)value);
                     CallPropertyChanged(nameof(Begin));
+                    UpdateEndFromBeginDelta();
                 }
             }
             get 
@@ -93,6 +95,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
                 {
                     Source.SetDelta((double)value);
                     CallPropertyChanged(nameof(Delta));
+                    UpdateEndFromBeginDelta();
                 }
             }
             get
@@ -103,7 +106,126 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models
             }
         }
 
+        public double? End
+        {
+            get
+            {
+                if (!Is2D())
+                {
+                    return null;
+                }
+
+                var getEndMethod = Source.GetType().GetMethod("GetEnd", BindingFlags.Public | BindingFlags.Instance);
+                if (getEndMethod != null)
+                {
+                    try
+                    {
+                        var value = getEndMethod.Invoke(Source, null);
+                        return value == null ? (double?)null : Convert.ToDouble(value);
+                    }
+                    catch
+                    {
+                        // Fall back to calculated value.
+                    }
+                }
+
+                return CalculateEndValue();
+            }
+        }
+
         private bool Is2D() => Source.DataMatrix.Columns != 1;
+
+        private void UpdateEndFromBeginDelta()
+        {
+            if (!Is2D())
+            {
+                return;
+            }
+
+            var end = CalculateEndValue();
+            if (end == null)
+            {
+                return;
+            }
+
+            var setEndMethod = Source.GetType().GetMethod("SetEnd", BindingFlags.Public | BindingFlags.Instance, null, new[] { typeof(double) }, null);
+            if (setEndMethod != null)
+            {
+                try
+                {
+                    setEndMethod.Invoke(Source, new object[] { end.Value });
+                }
+                catch
+                {
+                    // Keep data editable even if end setter is unavailable for this curve type.
+                }
+            }
+
+            CallPropertyChanged(nameof(End));
+        }
+
+        private double? CalculateEndValue()
+        {
+            if (!Is2D())
+            {
+                return null;
+            }
+
+            var begin = Begin;
+            var delta = Delta;
+            var pointsCount = GetPointsCount();
+
+            if (begin == null || delta == null || pointsCount == null || pointsCount <= 0)
+            {
+                return null;
+            }
+
+            return begin.Value + delta.Value * (pointsCount.Value - 1);
+        }
+
+        private int? GetPointsCount()
+        {
+            var matrix = Source.DataMatrix;
+            if (matrix == null)
+            {
+                return null;
+            }
+
+            var matrixType = matrix.GetType();
+            var rowsProperty = matrixType.GetProperty("Rows", BindingFlags.Public | BindingFlags.Instance);
+            if (rowsProperty != null)
+            {
+                var rowsValue = rowsProperty.GetValue(matrix, null);
+                if (rowsValue != null)
+                {
+                    try
+                    {
+                        return Convert.ToInt32(rowsValue);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+
+            var countProperty = matrixType.GetProperty("Count", BindingFlags.Public | BindingFlags.Instance);
+            if (countProperty != null)
+            {
+                var countValue = countProperty.GetValue(matrix, null);
+                if (countValue != null)
+                {
+                    try
+                    {
+                        return Convert.ToInt32(countValue);
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+
+            return null;
+        }
 
         public LISCurveItem(Curve source)
         {
