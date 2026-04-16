@@ -29,6 +29,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         private ParameterTable _selectedParameterTable;
         private ExportTemplate _selectedTemplate;
         private NamedItem _currentMnemonicsSet;
+        private bool _suppressTemplateApply;
 
         public ICollectionView AvailableCurvesView => _availableCurvesView;
 
@@ -67,7 +68,10 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
                 _selectedTemplate = value;
                 OnPropertyChanged();
-                ApplyTemplate();
+                if (!_suppressTemplateApply)
+                {
+                    ApplyTemplate();
+                }
                 RaiseCommandStates();
             }
         }
@@ -132,7 +136,9 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 new NamedItem("Набор 2"),
             };
             RefreshTemplates();
+            _suppressTemplateApply = true;
             SelectedTemplate = Templates.FirstOrDefault();
+            _suppressTemplateApply = false;
             CurrentMnemonicsSet = MnemonicsSets.FirstOrDefault();
 
             MoveSelectedRightCommand = new DelegateCommand(MoveSelectedToRight, CanMoveSelectedToRight);
