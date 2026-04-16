@@ -29,6 +29,8 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         private const string NoTemplateName = "Без шаблона";
 
         private string _curveFilter = string.Empty;
+        private double? _start;
+        private double? _stop;
         private ParameterTable _selectedParameterTable;
         private ExportTemplate _selectedTemplate;
         private MnemonicsSet _currentMnemonicsSet;
@@ -109,10 +111,44 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             }
         }
 
+        public double? Start
+        {
+            get => _start;
+            set
+            {
+                if (_start == value)
+                {
+                    return;
+                }
+
+                _start = value;
+                CallPropertyChanged(nameof(Start));
+                RaiseCommandStates();
+            }
+        }
+
+        public double? Stop
+        {
+            get => _stop;
+            set
+            {
+                if (_stop == value)
+                {
+                    return;
+                }
+
+                _stop = value;
+                CallPropertyChanged(nameof(Stop));
+                RaiseCommandStates();
+            }
+        }
+
         public ICommand MoveSelectedRightCommand { get; }
         public ICommand MoveSelectedLeftCommand { get; }
         public ICommand MoveAllRightCommand { get; }
         public ICommand MoveAllLeftCommand { get; }
+        public ICommand UseFullRangeCommand { get; }
+        public ICommand FixAllRangeCommand { get; }
         public ICommand DoneCommand { get; }
         public ICommand CancelCommand { get; }
         public ICommand SaveTemplateCommand { get; }
@@ -139,11 +175,14 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             SelectedTemplate = Templates.FirstOrDefault();
             _suppressTemplateApply = false;
             CurrentMnemonicsSet = MnemonicsSets.FirstOrDefault();
+            UseFullRange();
 
             MoveSelectedRightCommand = new RelayCommand(MoveSelectedToRight, CanMoveSelectedToRight);
             MoveSelectedLeftCommand = new RelayCommand(MoveSelectedToLeft, CanMoveSelectedToLeft);
             MoveAllRightCommand = new RelayCommand(_ => MoveAllToRight(), _ => _allCurves.Any(curve => curve.IsEnabled));
             MoveAllLeftCommand = new RelayCommand(_ => MoveAllToLeft(), _ => _selectedCurves.Count > 0);
+            UseFullRangeCommand = new RelayCommand(_ => UseFullRange(), _ => CanUseFullRange());
+            FixAllRangeCommand = new RelayCommand(_ => FixAllRange(), _ => CanFixAllRange());
 
             DoneCommand = new RelayCommand(_ => RequestClose?.Invoke(this, EventArgs.Empty), _ => _selectedCurves.Count > 0);
             CancelCommand = new RelayCommand(_ => RequestCancel?.Invoke(this, EventArgs.Empty));
@@ -293,6 +332,71 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
             }
 
             return result;
+        }
+
+        private bool CanUseFullRange()
+        {
+            return GetRangeSourceCurves().Any(curve => curve.Begin != null && curve.End != null);
+        }
+
+        private void UseFullRange()
+        {
+            var sourceCurves = GetRangeSourceCurves()
+                .Where(curve => curve.Begin != null && curve.End != null)
+                .ToList();
+            if (sourceCurves.Count == 0)
+            {
+                return;
+            }
+
+            Start = sourceCurves.Min(curve => curve.Begin.Value);
+            Stop = sourceCurves.Max(curve => curve.End.Value);
+        }
+
+        private bool CanFixAllRange()
+        {
+            return Start != null
+                && Stop != null
+                && _selectedCurves.Any(curve => curve.Begin != null && curve.Delta != null && curve.End != null);
+        }
+
+        private void FixAllRange()
+        {
+            if (Start == null || Stop == null)
+            {
+                return;
+            }
+
+            var newStart = Start.Value;
+            var newStop = Stop.Value;
+            foreach (var curve in _selectedCurves)
+            {
+                var oldBegin = curve.Begin;
+                var oldDelta = curve.Delta;
+                var oldEnd = curve.End;
+                if (oldBegin == null || oldDelta == null || oldEnd == null || Math.Abs(oldDelta.Value) < double.Epsilon)
+                {
+                    continue;
+                }
+
+                var samples = (oldEnd.Value - oldBegin.Value) / oldDelta.Value;
+                var pointsCount = Math.Max(1, (int)Math.Round(samples) + 1);
+                curve.Begin = newStart;
+                if (pointsCount > 1)
+                {
+                    curve.Delta = (newStop - newStart) / (pointsCount - 1);
+                }
+            }
+        }
+
+        private IEnumerable<LISCurveItem> GetRangeSourceCurves()
+        {
+            if (_selectedCurves.Count > 0)
+            {
+                return _selectedCurves;
+            }
+
+            return _allCurves;
         }
 
         private void ApplyTemplate()

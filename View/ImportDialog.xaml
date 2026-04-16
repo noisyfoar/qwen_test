@@ -48,6 +48,10 @@
                     Margin="12,0,0,0"
                     Padding="12,2"
                     Command="{Binding UseFullRangeCommand}"/>
+            <Button Content="Зафиксировать все"
+                    Margin="8,0,0,0"
+                    Padding="12,2"
+                    Command="{Binding FixAllRangeCommand}"/>
         </StackPanel>
 
         <Separator DockPanel.Dock="Top"/>
