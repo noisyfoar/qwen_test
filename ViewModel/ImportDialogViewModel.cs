@@ -1,4 +1,5 @@
 using NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models;
+using NPFGEO.Data;
 using Microsoft.Win32;
 using System;
 using System.Collections;
@@ -337,21 +338,55 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
         private bool CanUseFullRange()
         {
-            return GetRangeSourceCurves().Any(curve => curve.Begin != null && curve.End != null);
+            return GetRangeSourceCurves()
+                .Select(item => item.Source)
+                .Any(curve => curve != null && curve.DepthMatrix != null && curve.DepthMatrix.Count > 0);
         }
 
         private void UseFullRange()
         {
             var sourceCurves = GetRangeSourceCurves()
-                .Where(curve => curve.Begin != null && curve.End != null)
-                .ToList();
-            if (sourceCurves.Count == 0)
+                .Select(item => item.Source);
+
+            UpdateBorders(sourceCurves);
+        }
+
+        private void UpdateBorders(IEnumerable<Curve> curves)
+        {
+            var min = double.MaxValue;
+            var max = double.MinValue;
+
+            foreach (var curve in curves ?? Enumerable.Empty<Curve>())
             {
-                return;
+                if (curve == null || curve.DepthMatrix == null || curve.DepthMatrix.Count == 0)
+                {
+                    continue;
+                }
+
+                var roof = curve.Roof;
+                var foot = curve.Foot;
+
+                if (roof < min)
+                {
+                    min = roof;
+                }
+
+                if (foot > max)
+                {
+                    max = foot;
+                }
             }
 
-            Start = sourceCurves.Min(curve => curve.Begin.Value);
-            Stop = sourceCurves.Max(curve => curve.End.Value);
+            if (min == double.MaxValue && max == double.MinValue)
+            {
+                Start = 0.0;
+                Stop = 1000.0;
+            }
+            else
+            {
+                Start = Math.Floor(min * 10.0) / 10.0;
+                Stop = Math.Floor(max * 10.0) / 10.0;
+            }
         }
 
         private bool CanFixAllRange()
