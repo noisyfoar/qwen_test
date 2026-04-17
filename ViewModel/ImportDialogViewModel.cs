@@ -37,6 +37,10 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         private ExportTemplate _selectedTemplate;
         private MnemonicsSet _currentMnemonicsSet;
         private bool _suppressTemplateApply;
+        private readonly NonInterpolator _interpolatorNone = new NonInterpolator();
+        private readonly LinearInterpolator _interpolatorLinear = new LinearInterpolator();
+        private readonly NextNeighborInterpolator _interpolatorNextNeighbor = new NextNeighborInterpolator();
+        private InterpolatorStub _currentInterpolator;
 
         public ICollectionView AvailableCurvesView => _availableCurvesView;
 
@@ -45,6 +49,23 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         public ObservableCollection<ParameterTable> ParameterTables => _parameterTables;
         public ObservableCollection<ExportTemplate> Templates { get; }
         public ObservableCollection<MnemonicsSet> MnemonicsSets { get; }
+
+        public IReadOnlyList<InterpolatorStub> Interpolators { get; }
+
+        public InterpolatorStub CurrentInterpolator
+        {
+            get => _currentInterpolator;
+            set
+            {
+                if (ReferenceEquals(_currentInterpolator, value))
+                {
+                    return;
+                }
+
+                _currentInterpolator = value;
+                CallPropertyChanged(nameof(CurrentInterpolator));
+            }
+        }
 
         public ParameterTable SelectedParameterTable
         {
@@ -171,6 +192,13 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
             Templates = new ObservableCollection<ExportTemplate>();
             MnemonicsSets = new ObservableCollection<MnemonicsSet>();
+            Interpolators = new[]
+            {
+                _interpolatorNone,
+                _interpolatorLinear,
+                _interpolatorNextNeighbor,
+            };
+            _currentInterpolator = _interpolatorNone;
             RefreshTemplates();
             RefreshMnemonicsSets();
             _suppressTemplateApply = true;
