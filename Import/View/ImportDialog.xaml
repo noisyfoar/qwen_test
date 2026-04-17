@@ -1,0 +1,288 @@
+<Window x:Class="NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.View.ImportDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:local="clr-namespace:NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.View"
+        xmlns:models="clr-namespace:NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models"
+        Title="Настройка LIS"
+        Height="600"
+        Width="1000"
+        MinHeight="600"
+        MinWidth="1000"
+        >
+
+    <Window.Resources>
+        <sys:Double x:Key="imageSize">18</sys:Double>
+        <sys:Double x:Key="elementWidth">150</sys:Double>
+        <Thickness x:Key="margin" Left="8" Top="2" Right="8" Bottom="2"/>
+        <Style x:Key="ArrowButtonStyle" TargetType="Button">
+            <Setter Property="Margin" Value="3,5,3,5"/>
+            <Setter Property="Padding" Value="8,2"/>
+            <Setter Property="MinWidth" Value="36"/>
+        </Style>
+    </Window.Resources>
+
+    <DockPanel LastChildFill="True">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="{StaticResource margin}">
+            <TextBlock Text="Шаблон настроек" VerticalAlignment="Center"/>
+            <ComboBox Width="180" Margin="6,0,0,0">
+                <ComboBoxItem Content="Шаблон 1"/>
+                <ComboBoxItem Content="Шаблон 2"/>
+                <ComboBoxItem Content="Шаблон 3"/>
+            </ComboBox>
+            <Button Content="Сохранить" Margin="8,0,0,0" Padding="12,2"/>
+            <Button Content="Сохранить как" Margin="8,0,0,0" Padding="12,2"/>
+        </StackPanel>
+
+        <Separator DockPanel.Dock="Top"/>
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="8,3">
+            <TextBlock Text="Старт:" VerticalAlignment="Center"/>
+            <TextBox Width="90" Margin="6,0,0,0" Text="0"/>
+            <TextBlock Text="Стоп:" Margin="12,0,0,0" VerticalAlignment="Center"/>
+            <TextBox Width="90" Margin="6,0,0,0" Text="100"/>
+            <Button Content="Весь диапазон" Margin="12,0,0,0" Padding="12,2"/>
+        </StackPanel>
+
+        <Separator DockPanel.Dock="Top"/>
+
+        <Grid DockPanel.Dock="Top"  Margin="{StaticResource margin}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="8"/>
+                <RowDefinition Height="Auto"/>
+
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Шаблон кривых" VerticalAlignment="Center"/>
+            <ComboBox Width="{StaticResource elementWidth}" Margin="2, 0, 0, 0" Grid.Column="1" 
+                      SelectedItem="{Binding Path=SelectedTemplate, Mode=TwoWay}" 
+                      ItemsSource="{Binding Path=Templates}" DisplayMemberPath="Name"/>
+
+            <Button Content="Сохранить" Margin="8, 0, 8, 0" Padding="5, 0, 5, 0" Width="100" Grid.Column="2" Command="{Binding Path=SaveTemplateCommand, Mode=OneWay}"/>
+            <Button Content="Сохранить как" Margin="8, 0, 8, 0" Padding="5, 0, 5, 0" Width="100" Grid.Column="3" Command="{Binding Path=SaveAsTemplateCommand, Mode=OneWay}"/>
+
+            <TextBlock Text="Библ. мнемоник" VerticalAlignment="Center" Grid.Row="2"/>
+            <ComboBox Width="{StaticResource elementWidth}" Margin="2, 0, 0, 0" DisplayMemberPath="Name" Grid.Column="1" Grid.Row="2"
+                      SelectedItem="{Binding Path=CurrentMnemonicsSet, Mode=TwoWay}" 
+                      ItemsSource="{Binding Path=MnemonicsSets, Mode=OneWay}" />
+
+        </Grid>
+
+        <Separator DockPanel.Dock="Top"/>
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="{StaticResource margin}">
+            <TextBlock Text="Интерполяция" VerticalAlignment="Center"/>
+            <ComboBox Width="120" Margin="6, 0, 0, 0"
+                      SelectedValue="{Binding Path=CurrentInterpolator, Mode=TwoWay}"
+                      ItemsSource="{Binding Path=Interpolators, Mode=OneTime}">
+                <ComboBox.Resources>
+                    <DataTemplate DataType="{x:Type models:NonInterpolator}">
+                        <TextBlock Text="Нет"/>
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type models:LinearInterpolator}">
+                        <TextBlock Text="Линейная"/>
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type models:NextNeighborInterpolator}">
+                        <TextBlock Text="След.сосед"/>
+                    </DataTemplate>
+                </ComboBox.Resources>
+            </ComboBox>
+        </StackPanel>
+
+        <Separator DockPanel.Dock="Top"/>
+
+
+        <Grid DockPanel.Dock="Bottom" Margin="8" HorizontalAlignment="Right">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0"
+                    Content="Отмена"
+                    Margin="0,0,8,0"
+                    Padding="10,3"
+                    MinWidth="90"
+                    Click="Button_Click_Cancel"/>
+            <Button Grid.Column="1"
+                    Content="Готово"
+                    Padding="10,3"
+                    MinWidth="90"
+                    IsDefault="True"
+                    Click="Button_Click_Done"/>
+        </Grid>
+
+        <Grid Margin="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+
+            <GroupBox Header="Таблицы параметров" Grid.Column="0" Margin="0,0,8,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,6">
+                        <TextBlock Text="Таблица:" VerticalAlignment="Center"/>
+                        <ComboBox Width="160"
+                                  Margin="6,0,0,0"
+                                  ItemsSource="{Binding ParameterTables}"
+                                  DisplayMemberPath="Name"
+                                  SelectionChanged="ComboBox_SelectionChanged"
+                                  SelectedItem="{Binding SelectedParameterTable}"/>
+                    </StackPanel>
+
+                    <DataGrid Grid.Row="1"
+                              x:Name="ParametersGrid"
+                              ItemsSource="{Binding SelectedParameterTable.Rows}"
+                              AutoGenerateColumns="False"
+                              IsReadOnly="True"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              HeadersVisibility="Column"/>
+
+                </Grid>
+            </GroupBox>
+
+            <Grid Grid.Column="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="4*"/>
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="Доступные кривые" Grid.Column="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBox Grid.Row="0"
+                                 Margin="0,0,0,6"
+                                 Text="{Binding CurveFilter, UpdateSourceTrigger=PropertyChanged}"/>
+                        <ListBox x:Name="AvailableCurvesList"
+                                 Grid.Row="1"
+                                 SelectionMode="Extended"
+                                 ItemsSource="{Binding AvailableCurvesView}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding SourceName}" FontWeight="SemiBold"/>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding Units}"
+                                                   Foreground="Gray"
+                                                   Margin="10,0,0,0"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </GroupBox>
+
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,0">
+                    <Button Style="{StaticResource ArrowButtonStyle}"
+                            Command="{Binding MoveSelectedRightCommand}"
+                            CommandParameter="{Binding ElementName=AvailableCurvesList, Path=SelectedItems}">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Name="RightArrow" Width="{StaticResource imageSize}" Height="{StaticResource imageSize}" Margin="0,0,0,0" Source="..\Images32\RightArrow.png"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                    <Button Style="{StaticResource ArrowButtonStyle}"
+                            Command="{Binding MoveSelectedLeftCommand}"
+                            CommandParameter="{Binding ElementName=SelectedCurvesGrid, Path=SelectedItems}">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Name="LeftArrow" Width="{StaticResource imageSize}" Height="{StaticResource imageSize}" Margin="0,0,0,0" Source="..\Images32\LeftArrow.png"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                    <Button Style="{StaticResource ArrowButtonStyle}" Command="{Binding MoveAllRightCommand}">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Name="DoubleRightArrow" Width="{StaticResource imageSize}" Height="{StaticResource imageSize}" Margin="0,0,0,0" Source="..\Images32\DoubleRightArrow.png"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                    <Button Style="{StaticResource ArrowButtonStyle}" Command="{Binding MoveAllLeftCommand}">
+                        <Button.Content>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Name="DoubleLeftArrow" Width="{StaticResource imageSize}" Height="{StaticResource imageSize}" Margin="0,0,0,0" Source="..\Images32\DoubleLeftArrow.png"/>
+                            </StackPanel>
+                        </Button.Content>
+                    </Button>
+                </StackPanel>
+
+                <GroupBox Header="Выбранные кривые" Grid.Column="2">
+                    <DataGrid x:Name="SelectedCurvesGrid"
+                              ItemsSource="{Binding SelectedCurves}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              HeadersVisibility="Column"
+                              SelectionMode="Extended">
+                        
+                        <DataGrid.ColumnHeaderStyle>
+                            <Style TargetType="DataGridColumnHeader">
+                                <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                                <Setter Property="VerticalContentAlignment" Value="Center"/>
+                            </Style>
+                        </DataGrid.ColumnHeaderStyle>
+                        
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Binding="{Binding SourceName}" Width="1.5*">
+                                <DataGridTextColumn.Header>
+                                    <TextBlock TextAlignment="Center">
+                                        Исходное
+                                        <LineBreak/>
+                                        имя
+                                    </TextBlock>
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Binding="{Binding ExportName}" Width="1.5*">
+                                <DataGridTextColumn.Header>
+                                    <TextBlock TextAlignment="Center">
+                                        Импорт.
+                                        <LineBreak/>
+                                        имя
+                                    </TextBlock>
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Описание" Binding="{Binding Description}" Width="5*" />
+                            <DataGridTextColumn Binding="{Binding Begin}" Width="*">
+                                <DataGridTextColumn.Header>
+                                    <TextBlock TextAlignment="Center">
+                                        Начало
+                                        <LineBreak/>
+                                        отсчета
+                                    </TextBlock>
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+
+                            <DataGridTextColumn Binding="{Binding Delta}" Width="*">
+                                <DataGridTextColumn.Header>
+                                    <TextBlock TextAlignment="Center">Период<LineBreak/>дискрет.</TextBlock>
+                                </DataGridTextColumn.Header>
+                            </DataGridTextColumn>
+                            
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </GroupBox>
+            </Grid>
+        </Grid>
+    </DockPanel>
+</Window>
