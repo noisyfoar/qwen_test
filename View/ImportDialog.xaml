@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.View"
+        xmlns:las="clr-namespace:NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Export"
         Title="Настройка LIS"
         Height="600"
         Width="1000">
@@ -52,6 +53,24 @@
                     Margin="8,0,0,0"
                     Padding="12,2"
                     Command="{Binding FixAllRangeCommand}"/>
+        </StackPanel>
+
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="{StaticResource margin}">
+            <TextBlock Text="Интерполяция" VerticalAlignment="Center"/>
+            <ComboBox Width="100" Margin="2, 0, 0, 0" SelectedValue="{Binding Path=CurrentInterpolator, Mode=TwoWay}"
+                      ItemsSource="{Binding Path=Interpolators, Mode=OneTime}">
+                <ComboBox.Resources>
+                    <DataTemplate DataType="{x:Type las:NonInterpolator}">
+                        <TextBlock Text="Нет"/>
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type las:LinearInterpolator}">
+                        <TextBlock Text="Линейная"/>
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type las:NextNeighborInterpolator}">
+                        <TextBlock Text="След.сосед"/>
+                    </DataTemplate>
+                </ComboBox.Resources>
+            </ComboBox>
         </StackPanel>
 
         <Separator DockPanel.Dock="Top"/>
