@@ -391,9 +391,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
 
         private bool CanFixAllRange()
         {
-            return Start != null
-                && Stop != null
-                && _selectedCurves.Any(curve => curve.Begin != null && curve.Delta != null && curve.End != null);
+            return Start != null && Stop != null;
         }
 
         private void FixAllRange()
@@ -403,26 +401,19 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
                 return;
             }
 
-            var newStart = Start.Value;
-            var newStop = Stop.Value;
-            foreach (var curve in _selectedCurves)
-            {
-                var oldBegin = curve.Begin;
-                var oldDelta = curve.Delta;
-                var oldEnd = curve.End;
-                if (oldBegin == null || oldDelta == null || oldEnd == null || Math.Abs(oldDelta.Value) < double.Epsilon)
-                {
-                    continue;
-                }
+            var from = Math.Floor(Start.Value * 10.0) / 10.0;
+            var to = Math.Floor(Stop.Value * 10.0) / 10.0;
 
-                var samples = (oldEnd.Value - oldBegin.Value) / oldDelta.Value;
-                var pointsCount = Math.Max(1, (int)Math.Round(samples) + 1);
-                curve.Begin = newStart;
-                if (pointsCount > 1)
-                {
-                    curve.Delta = (newStop - newStart) / (pointsCount - 1);
-                }
+            if (from <= to)
+            {
+                Start = from;
+                Stop = to;
+                return;
             }
+
+            // Keep range valid for users who entered reversed values.
+            Start = to;
+            Stop = from;
         }
 
         private IEnumerable<LISCurveItem> GetRangeSourceCurves()
