@@ -59,5 +59,15 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.View
         {
             BuildParameterColumns(_viewModel.SelectedParameterTable);
         }
+
+        private void DoneButton_Click(object sender, RoutedEventArgs e)
+        {
+            CloseWindowWithDialogResult(true);
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            CloseWindowWithDialogResult(false);
+        }
     }
 }
