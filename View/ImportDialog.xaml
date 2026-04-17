@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.View"
-        xmlns:vm="clr-namespace:NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel"
+        xmlns:las="clr-namespace:NPFGEO.IO.LAS.Export"
         Title="Настройка LIS"
         Height="600"
         Width="1000">
@@ -60,13 +60,13 @@
             <ComboBox Width="100" Margin="2, 0, 0, 0" SelectedValue="{Binding Path=CurrentInterpolator, Mode=TwoWay}"
                       ItemsSource="{Binding Path=Interpolators, Mode=OneTime}">
                 <ComboBox.Resources>
-                    <DataTemplate DataType="{x:Type vm:NonInterpolator}">
+                    <DataTemplate DataType="{x:Type las:NonInterpolator}">
                         <TextBlock Text="Нет"/>
                     </DataTemplate>
-                    <DataTemplate DataType="{x:Type vm:LinearInterpolator}">
+                    <DataTemplate DataType="{x:Type las:LinearInterpolator}">
                         <TextBlock Text="Линейная"/>
                     </DataTemplate>
-                    <DataTemplate DataType="{x:Type vm:NextNeighborInterpolator}">
+                    <DataTemplate DataType="{x:Type las:NextNeighborInterpolator}">
                         <TextBlock Text="След.сосед"/>
                     </DataTemplate>
                 </ComboBox.Resources>

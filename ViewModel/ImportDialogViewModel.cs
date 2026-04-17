@@ -1,5 +1,6 @@
 using NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Models;
 using NPFGEO.Data;
+using NPFGEO.IO.LAS.Export;
 using Microsoft.Win32;
 using System;
 using System.Collections;
@@ -40,7 +41,7 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         private readonly NonInterpolator _interpolatorNone = new NonInterpolator();
         private readonly LinearInterpolator _interpolatorLinear = new LinearInterpolator();
         private readonly NextNeighborInterpolator _interpolatorNextNeighbor = new NextNeighborInterpolator();
-        private InterpolatorStub _currentInterpolator;
+        private IInterpolator _currentInterpolator;
 
         public ICollectionView AvailableCurvesView => _availableCurvesView;
 
@@ -50,9 +51,9 @@ namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.ViewModel
         public ObservableCollection<ExportTemplate> Templates { get; }
         public ObservableCollection<MnemonicsSet> MnemonicsSets { get; }
 
-        public IReadOnlyList<InterpolatorStub> Interpolators { get; }
+        public IReadOnlyList<IInterpolator> Interpolators { get; }
 
-        public InterpolatorStub CurrentInterpolator
+        public IInterpolator CurrentInterpolator
         {
             get => _currentInterpolator;
             set
