@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:local="clr-namespace:NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.View"
-        xmlns:las="clr-namespace:NPFGEO.IO.LAS.Export"
+        xmlns:las="clr-namespace:NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Export"
         Title="Настройка LIS"
         Height="600"
         Width="1000">

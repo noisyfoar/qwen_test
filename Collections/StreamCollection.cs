@@ -2,10 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace NPFGEO.Collections
+namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Collections
 {
     /// <summary>
-    /// Список с заменой диапазона (используется <see cref="IO.LAS.Export.BufferedWriter{T}"/>).
+    /// Список с заменой диапазона (используется <see cref="NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Export.BufferedWriter{T}"/>).
     /// </summary>
     public sealed class StreamCollection<T> : IList<T>
     {

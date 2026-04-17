@@ -1,10 +1,10 @@
-using NPFGEO.Collections;
 using NPFGEO.Data;
+using NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Collections;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 
-namespace NPFGEO.IO.LAS.Export
+namespace NPFGEO.ShellExtension.Formats.LIS.Dialogs.Import.Export
 {
     public interface IInterpolator
     {
